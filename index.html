@@ -325,7 +325,7 @@
           </select>
         </div>
         <div>
-          <label for="calc-sabor">Sabor / Producto</label>
+          <label for="calc-sabor">Producto</label>
           <select id="calc-sabor" onchange="calcCambioSabor()">
             <option value="">-- Seleccionar --</option>
           </select>
@@ -377,6 +377,12 @@
         <button class="btn btn-gris" onclick="copiarResumen()">📋 Copiar resumen</button>
       </div>
     </div>
+
+    <div class="card" style="text-align:center;">
+      <h2>¿Terminaste?</h2>
+      <button class="btn btn-peligro" onclick="limpiarCalculo()">🗑 Limpiar y empezar otro cálculo</button>
+      <div style="font-size:.8rem; color:var(--muted); margin-top:10px;">Borra solo los lotes y los datos del cálculo. Tus proveedores y productos se conservan.</div>
+    </div>
   </section>
 
   <!-- ================= PROVEEDORES ================= -->
@@ -390,7 +396,7 @@
     </div>
 
     <div class="card">
-      <h2>Mis proveedores y sabores</h2>
+      <h2>Mis proveedores y productos</h2>
       <div id="lista-proveedores"></div>
       <div id="sin-proveedores" class="aviso">No hay proveedores registrados todavía.</div>
     </div>
@@ -631,7 +637,7 @@
               '</div>';
             }
             return '<div class="fila-sabor">' +
-              '<span class="nom">🍬 ' + s.nombre + ' — <b>' + formatear(s.unidadesPorCaja) + ' unid./caja</b></span>' +
+              '<span class="nom">' + s.nombre + ' — <b>' + formatear(s.unidadesPorCaja) + ' unid./caja</b></span>' +
               '<div class="acciones">' +
                 '<button class="btn-ico" title="Editar" onclick="editarSabor(\'' + p.id + '\',\'' + s.id + '\')">✏️</button>' +
                 '<button class="btn-ico eliminar" title="Eliminar" onclick="eliminarSabor(\'' + p.id + '\',\'' + s.id + '\')">🗑</button>' +
@@ -644,7 +650,7 @@
           '<div class="proveedor-header">' + headerHtml + '</div>' +
           saboresHtml +
           '<div class="nuevo-sabor" id="sabor-input-' + p.id + '">' +
-            '<input type="text" class="sabor-nombre" placeholder="Nombre del sabor">' +
+            '<input type="text" class="sabor-nombre" placeholder="Nombre del producto">' +
             '<input type="number" class="sabor-unidades" placeholder="Unid./caja">' +
             '<button class="btn btn-primario" onclick="agregarSabor(\'' + p.id + '\')">➕ Agregar</button>' +
           '</div>';
@@ -754,7 +760,7 @@
         '<div class="lote-header">' +
           '<div>' +
             '<h3>🏷️ ' + l.nombre + '</h3>' +
-            '<span class="lote-sub">🏭 ' + l.proveedorNombre + ' · 🍬 ' + l.saborNombre + ' · ' + formatear(l.unidadesPorCaja) + ' unid./caja</span>' +
+            '<span class="lote-sub">🏭 Proveedor: ' + l.proveedorNombre + ' · Producto: ' + l.saborNombre + ' · ' + formatear(l.unidadesPorCaja) + ' unid./caja</span>' +
           '</div>' +
           '<div class="acciones">' +
             '<button class="btn btn-gris" title="Compartir por WhatsApp" onclick="compartirLote(\'' + l.id + '\')">📤</button>' +
@@ -785,6 +791,16 @@
     totalBox.style.display = 'block';
   }
 
+  function limpiarCalculo() {
+    if (lotes.length === 0) { alert('No hay cálculos que limpiar.'); return; }
+    if (!confirm('¿Limpiar todos los lotes y empezar otro cálculo? Tus proveedores y productos se conservan.')) return;
+    lotes = [];
+    guardarLotes();
+    document.getElementById('lote-nombre').value = '';
+    document.getElementById('lote-unidades').value = '';
+    renderLotes();
+  }
+
   // ============ COMPARTIR ============
   function obtenerFecha() {
     const d = new Date();
@@ -796,6 +812,10 @@
     return parseFloat(document.getElementById('calc-por-pallet').value);
   }
 
+  function nombreLote(n) {
+    return /^lote\b/i.test(n) ? n : 'Lote ' + n;
+  }
+
   function generarResumenLote(l) {
     const porPallet = porPalletValor();
     const c = calcCajas(l.unidades, l.unidadesPorCaja);
@@ -804,8 +824,9 @@
     lineas.push('📦 *CÁLCULO DE PALLETS*');
     lineas.push('🗓 ' + obtenerFecha());
     lineas.push('');
-    lineas.push('🏷️ ' + l.nombre);
-    lineas.push('   🏭 ' + l.proveedorNombre + ' · 🍬 ' + l.saborNombre + ' (' + formatear(l.unidadesPorCaja) + ' unid./caja)');
+    lineas.push('🏷️ ' + nombreLote(l.nombre));
+    lineas.push('   • Proveedor: ' + l.proveedorNombre);
+    lineas.push('   • Producto: ' + l.saborNombre + ' (' + formatear(l.unidadesPorCaja) + ' unid./caja)');
     lineas.push('   • ' + formatear(l.unidades) + ' unidades → ' + formatear(c.cajas) + ' cajas' + (c.sobrante > 0 ? ' (+' + formatear(c.sobrante) + ' unid.)' : ''));
     if (p) lineas.push('   • ' + p.texto + ' → ' + formatear(p.total) + ' pallets');
     return lineas.join('\n');
@@ -827,8 +848,9 @@
       totalUnidades += l.unidades;
       if (p) totalPallets += p.total;
 
-      lineas.push('🏷️ ' + l.nombre);
-      lineas.push('   🏭 ' + l.proveedorNombre + ' · 🍬 ' + l.saborNombre + ' (' + formatear(l.unidadesPorCaja) + ' unid./caja)');
+      lineas.push('🏷️ ' + nombreLote(l.nombre));
+      lineas.push('   • Proveedor: ' + l.proveedorNombre);
+      lineas.push('   • Producto: ' + l.saborNombre + ' (' + formatear(l.unidadesPorCaja) + ' unid./caja)');
       lineas.push('   • ' + formatear(l.unidades) + ' unidades → ' + formatear(c.cajas) + ' cajas' + (c.sobrante > 0 ? ' (+' + formatear(c.sobrante) + ' unid.)' : ''));
       if (p) lineas.push('   • ' + p.texto + ' → ' + formatear(p.total) + ' pallets');
       lineas.push('');

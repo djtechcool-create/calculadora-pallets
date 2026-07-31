@@ -1,4 +1,4 @@
-const CACHE = 'pallet-calc-v3';
+const CACHE = 'pallet-calc-v4';
 const ARCHIVOS = [
   './',
   './index.html',
@@ -28,11 +28,26 @@ self.addEventListener('activate', function (e) {
 
 self.addEventListener('fetch', function (e) {
   if (e.request.method !== 'GET') return;
-  e.respondWith(
-    caches.match(e.request).then(function (res) {
-      return res || fetch(e.request).then(function (net) {
+  const req = e.request;
+
+  if (req.mode === 'navigate') {
+    e.respondWith(
+      fetch(req).then(function (net) {
         const copia = net.clone();
-        caches.open(CACHE).then(function (cache) { cache.put(e.request, copia); });
+        caches.open(CACHE).then(function (cache) { cache.put(req, copia); });
+        return net;
+      }).catch(function () {
+        return caches.match(req).then(function (r) { return r || caches.match('./index.html'); });
+      })
+    );
+    return;
+  }
+
+  e.respondWith(
+    caches.match(req).then(function (res) {
+      return res || fetch(req).then(function (net) {
+        const copia = net.clone();
+        caches.open(CACHE).then(function (cache) { cache.put(req, copia); });
         return net;
       }).catch(function () {
         return caches.match('./index.html');
