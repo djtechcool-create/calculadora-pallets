@@ -151,6 +151,7 @@
     background: var(--entrada-bg);
     color: var(--texto);
     outline: none;
+    text-transform: uppercase;
     transition: border-color .15s, box-shadow .15s;
   }
   input:focus, select:focus { border-color: var(--acento); box-shadow: 0 0 0 3px rgba(20,184,166,.18); }
@@ -442,6 +443,13 @@
       navigator.serviceWorker.register('./sw.js').catch(function () {});
     });
   }
+
+  document.addEventListener('input', function (e) {
+    const el = e.target;
+    if (el && el.tagName === 'INPUT' && el.type !== 'number') {
+      el.value = el.value.toUpperCase();
+    }
+  });
 
   function cargarProveedores() {
     try { return JSON.parse(localStorage.getItem(STORAGE_KEY)) || []; }
@@ -760,7 +768,7 @@
         '<div class="lote-header">' +
           '<div>' +
             '<h3>🏷️ ' + l.nombre + '</h3>' +
-            '<span class="lote-sub">🏭 Proveedor: ' + l.proveedorNombre + ' · Producto: ' + l.saborNombre + ' · ' + formatear(l.unidadesPorCaja) + ' unid./caja</span>' +
+            '<span class="lote-sub">🏭 Proveedor: ' + l.proveedorNombre + ' · 📦 Producto: ' + l.saborNombre + ' · ' + formatear(l.unidadesPorCaja) + ' unid./caja</span>' +
           '</div>' +
           '<div class="acciones">' +
             '<button class="btn btn-gris" title="Compartir por WhatsApp" onclick="compartirLote(\'' + l.id + '\')">📤</button>' +
@@ -823,46 +831,49 @@
     let lineas = [];
     lineas.push('📦 *CÁLCULO DE PALLETS*');
     lineas.push('🗓 ' + obtenerFecha());
-    lineas.push('');
-    lineas.push('🏷️ ' + nombreLote(l.nombre));
-    lineas.push('   • Proveedor: ' + l.proveedorNombre);
-    lineas.push('   • Producto: ' + l.saborNombre + ' (' + formatear(l.unidadesPorCaja) + ' unid./caja)');
+    lineas.push('──────────────────');
+    lineas.push('🏷️ *' + nombreLote(l.nombre).toUpperCase() + '*');
+    if (porPallet && porPallet > 0) lineas.push('   • Cajas por pallet: ' + formatear(porPallet));
+    lineas.push('   • 🏭 Proveedor: ' + l.proveedorNombre.toUpperCase());
+    lineas.push('   • 📦 Producto: ' + l.saborNombre.toUpperCase() + ' (' + formatear(l.unidadesPorCaja) + ' unid./caja)');
     lineas.push('   • ' + formatear(l.unidades) + ' unidades → ' + formatear(c.cajas) + ' cajas' + (c.sobrante > 0 ? ' (+' + formatear(c.sobrante) + ' unid.)' : ''));
-    if (p) lineas.push('   • ' + p.texto + ' → ' + formatear(p.total) + ' pallets');
+    if (p) lineas.push('   • ' + p.texto.toUpperCase() + ' → ' + formatear(p.total) + ' pallets');
     return lineas.join('\n');
   }
 
   function generarResumen() {
     const porPallet = porPalletValor();
+    const SEP = '──────────────────';
     let lineas = [];
     lineas.push('📦 *CÁLCULO DE PALLETS*');
     lineas.push('🗓 ' + obtenerFecha());
-    lineas.push('📋 Cajas por pallet: ' + (porPallet && porPallet > 0 ? formatear(porPallet) : '—'));
-    lineas.push('');
+    lineas.push(SEP);
 
     let totalCajas = 0, totalUnidades = 0, totalPallets = 0;
-    lotes.forEach(l => {
+    lotes.forEach((l, i) => {
       const c = calcCajas(l.unidades, l.unidadesPorCaja);
       const p = porPallet && porPallet > 0 ? calcPallets(c.cajas, porPallet) : null;
       totalCajas += c.cajas;
       totalUnidades += l.unidades;
       if (p) totalPallets += p.total;
 
-      lineas.push('🏷️ ' + nombreLote(l.nombre));
-      lineas.push('   • Proveedor: ' + l.proveedorNombre);
-      lineas.push('   • Producto: ' + l.saborNombre + ' (' + formatear(l.unidadesPorCaja) + ' unid./caja)');
+      lineas.push('🏷️ *' + nombreLote(l.nombre).toUpperCase() + '*');
+      if (porPallet && porPallet > 0) lineas.push('   • Cajas por pallet: ' + formatear(porPallet));
+      lineas.push('   • 🏭 Proveedor: ' + l.proveedorNombre.toUpperCase());
+      lineas.push('   • 📦 Producto: ' + l.saborNombre.toUpperCase() + ' (' + formatear(l.unidadesPorCaja) + ' unid./caja)');
       lineas.push('   • ' + formatear(l.unidades) + ' unidades → ' + formatear(c.cajas) + ' cajas' + (c.sobrante > 0 ? ' (+' + formatear(c.sobrante) + ' unid.)' : ''));
-      if (p) lineas.push('   • ' + p.texto + ' → ' + formatear(p.total) + ' pallets');
-      lineas.push('');
+      if (p) lineas.push('   • ' + p.texto.toUpperCase() + ' → ' + formatear(p.total) + ' pallets');
+      if (i < lotes.length - 1) lineas.push(SEP);
     });
 
+    lineas.push(SEP);
     lineas.push('✅ *RESUMEN*');
-    lineas.push('   Total unidades: ' + formatear(totalUnidades));
-    lineas.push('   Total cajas: ' + formatear(totalCajas));
-    lineas.push('   Total pallets: ' + (totalPallets > 0 ? formatear(totalPallets) : '—'));
+    lineas.push('   • Total unidades: ' + formatear(totalUnidades));
+    lineas.push('   • Total cajas: ' + formatear(totalCajas));
+    lineas.push('   • Total pallets: ' + (totalPallets > 0 ? formatear(totalPallets) : '—'));
     if (porPallet && porPallet > 0) {
       const tp = calcPallets(totalCajas, porPallet);
-      lineas.push('   Desglose: ' + tp.texto);
+      lineas.push('   • Desglose: ' + tp.texto.toUpperCase());
     }
     return lineas.join('\n');
   }
