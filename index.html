@@ -2,30 +2,112 @@
 <html lang="es">
 <head>
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
 <title>Calculadora de Pallets</title>
+<meta name="description" content="Convierte unidades en cajas y cajas en pallets. Calculadora de pallets para bodega y logística.">
+<meta name="theme-color" content="#0f766e">
+<link rel="manifest" href="manifest.webmanifest">
+<link rel="icon" href="icon-192.png" type="image/png">
+<link rel="apple-touch-icon" href="icon-180.png">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="Pallets">
+<script>
+  (function () {
+    var t = localStorage.getItem('palletTema');
+    if (!t) t = window.matchMedia('(prefers-color-scheme: dark)').matches ? 'oscuro' : 'claro';
+    document.documentElement.setAttribute('data-tema', t);
+  })();
+</script>
 <style>
   * { box-sizing: border-box; margin: 0; padding: 0; }
+  :root {
+    --bg: #f0f4f8;
+    --card: #ffffff;
+    --texto: #1f2933;
+    --muted: #52606d;
+    --borde: #e2e8f0;
+    --entrada-bg: #ffffff;
+    --entrada-leida: #f1f5f9;
+    --acento: #0f766e;
+    --acento-claro: #14b8a6;
+    --acento-suave: #f0fdfa;
+    --acento-borde: #99f6e4;
+    --btn-gris-bg: #e2e8f0;
+    --btn-gris-txt: #334155;
+    --nav-bg: #ffffff;
+    --header1: #0f766e;
+    --header2: #14b8a6;
+    --sombra: rgba(0,0,0,.08);
+    --tabla-cab: #f0fdfa;
+    --tabla-cab-txt: #0f766e;
+    --tabla-linea: #e2e8f0;
+  }
+  html[data-tema="oscuro"] {
+    --bg: #0f172a;
+    --card: #1e293b;
+    --texto: #e2e8f0;
+    --muted: #94a3b8;
+    --borde: #334155;
+    --entrada-bg: #0f172a;
+    --entrada-leida: #1e293b;
+    --acento: #2dd4bf;
+    --acento-claro: #5eead4;
+    --acento-suave: #0b1e24;
+    --acento-borde: #115e59;
+    --btn-gris-bg: #334155;
+    --btn-gris-txt: #e2e8f0;
+    --nav-bg: #1e293b;
+    --header1: #0d9488;
+    --header2: #14b8a6;
+    --sombra: rgba(0,0,0,.4);
+    --tabla-cab: #0b1e24;
+    --tabla-cab-txt: #5eead4;
+    --tabla-linea: #334155;
+  }
   body {
     font-family: "Segoe UI", Roboto, Arial, sans-serif;
-    background: #f0f4f8;
-    color: #1f2933;
+    background: var(--bg);
+    color: var(--texto);
     min-height: 100vh;
+    min-height: 100dvh;
+    transition: background .25s, color .25s;
   }
   header {
-    background: linear-gradient(135deg, #0f766e, #14b8a6);
+    background: linear-gradient(135deg, var(--header1), var(--header2));
     color: #fff;
-    padding: 24px 16px;
+    padding: 22px 60px 22px 16px;
     text-align: center;
-    box-shadow: 0 2px 8px rgba(0,0,0,.15);
+    box-shadow: 0 2px 8px var(--sombra);
+    position: relative;
   }
-  header h1 { font-size: 1.6rem; letter-spacing: .5px; }
-  header p { opacity: .9; margin-top: 4px; font-size: .95rem; }
+  header h1 { font-size: 1.5rem; letter-spacing: .5px; }
+  header p { opacity: .92; margin-top: 4px; font-size: .9rem; }
+  .btn-tema {
+    position: absolute;
+    right: 14px;
+    top: 50%;
+    transform: translateY(-50%);
+    background: rgba(255,255,255,.18);
+    border: 1px solid rgba(255,255,255,.35);
+    border-radius: 50%;
+    width: 42px;
+    height: 42px;
+    font-size: 1.2rem;
+    cursor: pointer;
+    color: #fff;
+    line-height: 1;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+  .btn-tema:hover { background: rgba(255,255,255,.3); }
 
   nav {
     display: flex;
-    background: #fff;
-    border-bottom: 1px solid #e2e8f0;
+    background: var(--nav-bg);
+    border-bottom: 1px solid var(--borde);
     position: sticky;
     top: 0;
     z-index: 10;
@@ -33,55 +115,59 @@
   }
   nav button {
     flex: 1;
+    min-width: 110px;
     padding: 14px 8px;
-    background: #fff;
+    background: transparent;
     border: none;
     border-bottom: 3px solid transparent;
     font-size: 1rem;
     font-weight: 600;
-    color: #52606d;
+    color: var(--muted);
     cursor: pointer;
     white-space: nowrap;
+    transition: color .15s;
   }
-  nav button.activo { color: #0f766e; border-bottom-color: #0f766e; }
+  nav button.activo { color: var(--acento); border-bottom-color: var(--acento); }
 
   main { max-width: 860px; margin: 0 auto; padding: 16px; }
   .tab { display: none; }
   .tab.activo { display: block; }
 
   .card {
-    background: #fff;
+    background: var(--card);
     border-radius: 12px;
-    box-shadow: 0 1px 4px rgba(0,0,0,.08);
+    box-shadow: 0 1px 4px var(--sombra);
     padding: 18px;
     margin-bottom: 16px;
+    transition: background .25s;
   }
   .card h2 {
     font-size: 1.15rem;
-    color: #0f766e;
+    color: var(--acento);
     margin-bottom: 14px;
-    border-bottom: 2px solid #e6fffa;
+    border-bottom: 2px solid var(--acento-borde);
     padding-bottom: 8px;
   }
   .grid-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
   .grid-3 { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 12px; }
 
-  label { display: block; font-size: .85rem; font-weight: 600; margin-bottom: 5px; color: #3e4c59; }
+  label { display: block; font-size: .85rem; font-weight: 600; margin-bottom: 5px; color: var(--muted); }
   input, select {
     width: 100%;
-    padding: 10px 12px;
+    padding: 12px;
     font-size: 1rem;
-    border: 1px solid #cbd5e1;
+    border: 1px solid var(--borde);
     border-radius: 8px;
-    background: #fff;
+    background: var(--entrada-bg);
+    color: var(--texto);
     outline: none;
-    transition: border-color .15s;
+    transition: border-color .15s, box-shadow .15s;
   }
-  input:focus, select:focus { border-color: #0f766e; box-shadow: 0 0 0 3px rgba(15,118,110,.15); }
-  input:read-only { background: #f1f5f9; font-weight: 700; color: #0f766e; }
+  input:focus, select:focus { border-color: var(--acento); box-shadow: 0 0 0 3px rgba(20,184,166,.2); }
+  input:read-only { background: var(--entrada-leida); font-weight: 700; color: var(--acento); }
 
   .btn {
-    padding: 10px 16px;
+    padding: 12px 16px;
     border: none;
     border-radius: 8px;
     font-size: .95rem;
@@ -90,26 +176,21 @@
     transition: opacity .15s;
   }
   .btn:hover { opacity: .85; }
-  .btn-primario { background: #0f766e; color: #fff; }
+  .btn-primario { background: var(--acento); color: #fff; }
   .btn-peligro { background: #e53e3e; color: #fff; }
-  .btn-gris { background: #e2e8f0; color: #334155; }
+  .btn-gris { background: var(--btn-gris-bg); color: var(--btn-gris-txt); }
 
   .resultado {
     margin-top: 14px;
-    border: 2px dashed #99f6e4;
-    background: #f0fdfa;
+    border: 2px dashed var(--acento-borde);
+    background: var(--acento-suave);
     border-radius: 10px;
     padding: 14px;
     display: none;
   }
   .resultado.visible { display: block; }
-  .resultado .grande {
-    font-size: 1.5rem;
-    font-weight: 800;
-    color: #0f766e;
-  }
+  .resultado .grande { font-size: 1.5rem; font-weight: 800; color: var(--acento); }
   .resultado .linea { margin-top: 6px; font-size: .98rem; }
-  .resultado .linea b { color: #0f766e; }
 
   .aviso {
     background: #fffbeb;
@@ -120,10 +201,14 @@
     font-size: .9rem;
     margin-top: 10px;
   }
+  html[data-tema="oscuro"] .aviso {
+    background: #3a2e10;
+    border-color: #7c5a1e;
+    color: #fde68a;
+  }
 
-  /* Proveedores */
   .proveedor {
-    border: 1px solid #e2e8f0;
+    border: 1px solid var(--borde);
     border-radius: 10px;
     padding: 14px;
     margin-bottom: 14px;
@@ -132,58 +217,82 @@
     display: flex;
     align-items: center;
     justify-content: space-between;
+    gap: 8px;
     margin-bottom: 10px;
+    flex-wrap: wrap;
   }
-  .proveedor-header h3 { font-size: 1.05rem; color: #1f2933; }
+  .proveedor-header h3 { font-size: 1.05rem; }
   .fila-sabor {
     display: flex;
     align-items: center;
     justify-content: space-between;
     gap: 8px;
     padding: 6px 0;
-    border-bottom: 1px solid #f1f5f9;
+    border-bottom: 1px solid var(--tabla-linea);
     font-size: .92rem;
   }
   .fila-sabor:last-child { border-bottom: none; }
-  .fila-sabor span b { color: #0f766e; }
-  .fila-sabor button { background: none; border: none; color: #e53e3e; font-size: 1.1rem; cursor: pointer; }
-  .nuevo-sabor { display: flex; gap: 8px; margin-top: 10px; }
-  .nuevo-sabor input:nth-child(2) { max-width: 120px; }
+  .fila-sabor button { background: none; border: none; color: #e53e3e; font-size: 1.15rem; cursor: pointer; padding: 2px 6px; }
+  .nuevo-sabor { display: flex; gap: 8px; margin-top: 10px; flex-wrap: wrap; }
+  .nuevo-sabor input:nth-child(1) { flex: 1; min-width: 140px; }
+  .nuevo-sabor input:nth-child(2) { max-width: 140px; }
 
   .form-alta { display: flex; gap: 8px; }
   .form-alta input { flex: 1; }
 
-  /* Tabla lote */
-  .tabla-lote { width: 100%; border-collapse: collapse; font-size: .88rem; }
+  .tabla-lote { width: 100%; border-collapse: collapse; font-size: .88rem; min-width: 700px; }
   .tabla-lote th {
-    background: #f0fdfa;
-    color: #0f766e;
+    background: var(--tabla-cab);
+    color: var(--tabla-cab-txt);
     padding: 8px 6px;
-    border-bottom: 2px solid #99f6e4;
+    border-bottom: 2px solid var(--acento-borde);
     text-align: left;
     white-space: nowrap;
   }
-  .tabla-lote td { padding: 6px; border-bottom: 1px solid #e2e8f0; vertical-align: middle; }
-  .tabla-lote input, .tabla-lote select { padding: 6px 8px; font-size: .88rem; }
+  .tabla-lote td { padding: 6px; border-bottom: 1px solid var(--tabla-linea); vertical-align: middle; }
+  .tabla-lote input, .tabla-lote select { padding: 8px; font-size: .9rem; }
   .resumen-fila { font-size: .85rem; }
-  .resumen-fila .det { color: #52606d; font-size: .78rem; }
+  .resumen-fila .det { color: var(--muted); font-size: .78rem; }
   .total-lote {
-    background: #f0fdfa;
+    background: var(--acento-suave);
+    border: 1px solid var(--acento-borde);
     border-radius: 10px;
     padding: 14px;
     margin-top: 12px;
     font-size: .98rem;
   }
-  .total-lote .grande { font-size: 1.35rem; font-weight: 800; color: #0f766e; }
+  .total-lote .grande { font-size: 1.35rem; font-weight: 800; color: var(--acento); }
 
   .fila-lote { animation: aparecer .2s ease; }
   @keyframes aparecer { from { opacity: 0; } to { opacity: 1; } }
 
-  .pie { text-align: center; color: #94a3b8; font-size: .8rem; padding: 16px; }
+  .pie { text-align: center; color: var(--muted); font-size: .8rem; padding: 16px 16px 30px; }
+
+  /* ---------- MÓVIL ---------- */
   @media (max-width: 640px) {
+    header h1 { font-size: 1.3rem; }
     .grid-2, .grid-3 { grid-template-columns: 1fr; }
-    .tabla-lote { font-size: .8rem; }
-    .tabla-lote th:nth-child(2), .tabla-lote td:nth-child(2) { display: none; }
+    main { padding: 12px; }
+    input, select { font-size: 16px; }
+    .tabla-lote, .tabla-lote tbody, .tabla-lote tr, .tabla-lote td { display: block; width: 100%; }
+    .tabla-lote thead { display: none; }
+    .tabla-lote tr {
+      border: 1px solid var(--borde);
+      border-radius: 10px;
+      margin-bottom: 12px;
+      padding: 10px;
+    }
+    .tabla-lote td { border: none; padding: 6px 0; display: flex; flex-direction: column; }
+    .tabla-lote td:last-child { align-items: flex-end; padding: 4px 0 0; }
+    .tabla-lote td::before {
+      content: attr(data-label);
+      font-size: .72rem;
+      font-weight: 700;
+      color: var(--muted);
+      margin-bottom: 3px;
+      text-transform: uppercase;
+      letter-spacing: .4px;
+    }
   }
 </style>
 </head>
@@ -192,6 +301,7 @@
 <header>
   <h1>📦 Calculadora de Pallets</h1>
   <p>Convierte unidades en cajas y cajas en pallets</p>
+  <button id="btn-tema" class="btn-tema" onclick="alternarTema()" title="Cambiar tema">🌙</button>
 </header>
 
 <nav>
@@ -293,7 +403,7 @@
       <div class="total-lote" id="total-lote" style="display:none;">
         <div>📦 <b>Total de cajas:</b> <span class="grande" id="lote-total-cajas">0</span></div>
         <div style="margin-top:6px;">🛠 <b>Total de pallets:</b> <span class="grande" id="lote-total-pallets">0</span></div>
-        <div id="lote-detalle" class="det" style="margin-top:6px; color:#52606d;"></div>
+        <div id="lote-detalle" class="det" style="margin-top:6px; color:var(--muted);"></div>
       </div>
     </div>
   </section>
@@ -316,11 +426,43 @@
   </section>
 </main>
 
-<div class="pie">Datos guardados localmente en este dispositivo.</div>
+<div class="pie">💡 En el navegador del celular: menú → "Agregar a pantalla de inicio" para instalarla como app.</div>
 
 <script>
   const STORAGE_KEY = 'calculadoraPalletsProveedores';
   let proveedores = cargarProveedores();
+
+  // ============ TEMA ============
+  function aplicarTema() {
+    const t = document.documentElement.getAttribute('data-tema');
+    const btn = document.getElementById('btn-tema');
+    if (btn) btn.textContent = t === 'oscuro' ? '☀️' : '🌙';
+    const meta = document.querySelector('meta[name="theme-color"]');
+    if (meta) meta.setAttribute('content', t === 'oscuro' ? '#0f172a' : '#0f766e');
+  }
+  function alternarTema() {
+    const actual = document.documentElement.getAttribute('data-tema');
+    const nuevo = actual === 'oscuro' ? 'claro' : 'oscuro';
+    localStorage.setItem('palletTema', nuevo);
+    document.documentElement.setAttribute('data-tema', nuevo);
+    aplicarTema();
+  }
+  if (window.matchMedia) {
+    window.matchMedia('(prefers-color-scheme: dark)').addEventListener('change', function (e) {
+      if (!localStorage.getItem('palletTema')) {
+        document.documentElement.setAttribute('data-tema', e.matches ? 'oscuro' : 'claro');
+        aplicarTema();
+      }
+    });
+  }
+  aplicarTema();
+
+  // ============ PWA ============
+  if ('serviceWorker' in navigator) {
+    window.addEventListener('load', function () {
+      navigator.serviceWorker.register('./sw.js').catch(function () {});
+    });
+  }
 
   function cargarProveedores() {
     try { return JSON.parse(localStorage.getItem(STORAGE_KEY)) || []; }
@@ -446,7 +588,7 @@
 
         let saboresHtml = '';
         if (p.sabores.length === 0) {
-          saboresHtml = '<div style="color:#94a3b8; font-size:.85rem;">Sin sabores. Agrega el primero abajo.</div>';
+          saboresHtml = '<div style="color:var(--muted); font-size:.85rem;">Sin sabores. Agrega el primero abajo.</div>';
         } else {
           saboresHtml = p.sabores.map(s =>
             '<div class="fila-sabor">' +
@@ -523,16 +665,15 @@
     const tbody = document.getElementById('cuerpo-lote');
     const tr = document.createElement('tr');
     tr.className = 'fila-lote';
-    tr.dataset.fila = '1';
     tr.innerHTML =
-      '<td><select class="sel-prov" onchange="filaCambioProv(this)">' +
+      '<td data-label="Proveedor"><select class="sel-prov" onchange="filaCambioProv(this)">' +
         '<option value="">-- Proveedor --</option>' +
         proveedores.map(p => '<option value="' + p.id + '">' + p.nombre + '</option>').join('') +
       '</select></td>' +
-      '<td><select class="sel-sab" onchange="filaCambioSabor(this)"><option value="">-- Sabor --</option></select></td>' +
-      '<td><input type="number" class="inp-unid" value="" readonly style="text-align:center;"></td>' +
-      '<td><input type="number" class="inp-total" min="0" placeholder="Total unid." oninput="filaCalc(this)"></td>' +
-      '<td><div class="resumen-fila">—</div></td>' +
+      '<td data-label="Sabor"><select class="sel-sab" onchange="filaCambioSabor(this)"><option value="">-- Sabor --</option></select></td>' +
+      '<td data-label="Unid./caja"><input type="number" class="inp-unid" value="" readonly style="text-align:center;"></td>' +
+      '<td data-label="Total unid."><input type="number" class="inp-total" min="0" placeholder="Total unid." oninput="filaCalc(this)"></td>' +
+      '<td data-label="Resultado"><div class="resumen-fila">—</div></td>' +
       '<td><button class="btn btn-peligro" onclick="eliminarFila(this)">✕</button></td>';
     tbody.appendChild(tr);
     renderLote();
