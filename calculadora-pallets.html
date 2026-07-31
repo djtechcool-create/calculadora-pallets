@@ -1,0 +1,644 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Calculadora de Pallets</title>
+<style>
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body {
+    font-family: "Segoe UI", Roboto, Arial, sans-serif;
+    background: #f0f4f8;
+    color: #1f2933;
+    min-height: 100vh;
+  }
+  header {
+    background: linear-gradient(135deg, #0f766e, #14b8a6);
+    color: #fff;
+    padding: 24px 16px;
+    text-align: center;
+    box-shadow: 0 2px 8px rgba(0,0,0,.15);
+  }
+  header h1 { font-size: 1.6rem; letter-spacing: .5px; }
+  header p { opacity: .9; margin-top: 4px; font-size: .95rem; }
+
+  nav {
+    display: flex;
+    background: #fff;
+    border-bottom: 1px solid #e2e8f0;
+    position: sticky;
+    top: 0;
+    z-index: 10;
+    overflow-x: auto;
+  }
+  nav button {
+    flex: 1;
+    padding: 14px 8px;
+    background: #fff;
+    border: none;
+    border-bottom: 3px solid transparent;
+    font-size: 1rem;
+    font-weight: 600;
+    color: #52606d;
+    cursor: pointer;
+    white-space: nowrap;
+  }
+  nav button.activo { color: #0f766e; border-bottom-color: #0f766e; }
+
+  main { max-width: 860px; margin: 0 auto; padding: 16px; }
+  .tab { display: none; }
+  .tab.activo { display: block; }
+
+  .card {
+    background: #fff;
+    border-radius: 12px;
+    box-shadow: 0 1px 4px rgba(0,0,0,.08);
+    padding: 18px;
+    margin-bottom: 16px;
+  }
+  .card h2 {
+    font-size: 1.15rem;
+    color: #0f766e;
+    margin-bottom: 14px;
+    border-bottom: 2px solid #e6fffa;
+    padding-bottom: 8px;
+  }
+  .grid-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+  .grid-3 { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 12px; }
+
+  label { display: block; font-size: .85rem; font-weight: 600; margin-bottom: 5px; color: #3e4c59; }
+  input, select {
+    width: 100%;
+    padding: 10px 12px;
+    font-size: 1rem;
+    border: 1px solid #cbd5e1;
+    border-radius: 8px;
+    background: #fff;
+    outline: none;
+    transition: border-color .15s;
+  }
+  input:focus, select:focus { border-color: #0f766e; box-shadow: 0 0 0 3px rgba(15,118,110,.15); }
+  input:read-only { background: #f1f5f9; font-weight: 700; color: #0f766e; }
+
+  .btn {
+    padding: 10px 16px;
+    border: none;
+    border-radius: 8px;
+    font-size: .95rem;
+    font-weight: 600;
+    cursor: pointer;
+    transition: opacity .15s;
+  }
+  .btn:hover { opacity: .85; }
+  .btn-primario { background: #0f766e; color: #fff; }
+  .btn-peligro { background: #e53e3e; color: #fff; }
+  .btn-gris { background: #e2e8f0; color: #334155; }
+
+  .resultado {
+    margin-top: 14px;
+    border: 2px dashed #99f6e4;
+    background: #f0fdfa;
+    border-radius: 10px;
+    padding: 14px;
+    display: none;
+  }
+  .resultado.visible { display: block; }
+  .resultado .grande {
+    font-size: 1.5rem;
+    font-weight: 800;
+    color: #0f766e;
+  }
+  .resultado .linea { margin-top: 6px; font-size: .98rem; }
+  .resultado .linea b { color: #0f766e; }
+
+  .aviso {
+    background: #fffbeb;
+    border: 1px solid #fde68a;
+    color: #92400e;
+    border-radius: 8px;
+    padding: 12px;
+    font-size: .9rem;
+    margin-top: 10px;
+  }
+
+  /* Proveedores */
+  .proveedor {
+    border: 1px solid #e2e8f0;
+    border-radius: 10px;
+    padding: 14px;
+    margin-bottom: 14px;
+  }
+  .proveedor-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-bottom: 10px;
+  }
+  .proveedor-header h3 { font-size: 1.05rem; color: #1f2933; }
+  .fila-sabor {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 8px;
+    padding: 6px 0;
+    border-bottom: 1px solid #f1f5f9;
+    font-size: .92rem;
+  }
+  .fila-sabor:last-child { border-bottom: none; }
+  .fila-sabor span b { color: #0f766e; }
+  .fila-sabor button { background: none; border: none; color: #e53e3e; font-size: 1.1rem; cursor: pointer; }
+  .nuevo-sabor { display: flex; gap: 8px; margin-top: 10px; }
+  .nuevo-sabor input:nth-child(2) { max-width: 120px; }
+
+  .form-alta { display: flex; gap: 8px; }
+  .form-alta input { flex: 1; }
+
+  /* Tabla lote */
+  .tabla-lote { width: 100%; border-collapse: collapse; font-size: .88rem; }
+  .tabla-lote th {
+    background: #f0fdfa;
+    color: #0f766e;
+    padding: 8px 6px;
+    border-bottom: 2px solid #99f6e4;
+    text-align: left;
+    white-space: nowrap;
+  }
+  .tabla-lote td { padding: 6px; border-bottom: 1px solid #e2e8f0; vertical-align: middle; }
+  .tabla-lote input, .tabla-lote select { padding: 6px 8px; font-size: .88rem; }
+  .resumen-fila { font-size: .85rem; }
+  .resumen-fila .det { color: #52606d; font-size: .78rem; }
+  .total-lote {
+    background: #f0fdfa;
+    border-radius: 10px;
+    padding: 14px;
+    margin-top: 12px;
+    font-size: .98rem;
+  }
+  .total-lote .grande { font-size: 1.35rem; font-weight: 800; color: #0f766e; }
+
+  .fila-lote { animation: aparecer .2s ease; }
+  @keyframes aparecer { from { opacity: 0; } to { opacity: 1; } }
+
+  .pie { text-align: center; color: #94a3b8; font-size: .8rem; padding: 16px; }
+  @media (max-width: 640px) {
+    .grid-2, .grid-3 { grid-template-columns: 1fr; }
+    .tabla-lote { font-size: .8rem; }
+    .tabla-lote th:nth-child(2), .tabla-lote td:nth-child(2) { display: none; }
+  }
+</style>
+</head>
+<body>
+
+<header>
+  <h1>📦 Calculadora de Pallets</h1>
+  <p>Convierte unidades en cajas y cajas en pallets</p>
+</header>
+
+<nav>
+  <button id="btn-tab-calc" class="activo" onclick="cambiarTab('calc')">🧮 Calculadora</button>
+  <button id="btn-tab-lote" onclick="cambiarTab('lote')">📋 Lote</button>
+  <button id="btn-tab-prov" onclick="cambiarTab('prov')">🏭 Proveedores</button>
+</nav>
+
+<main>
+  <!-- ================= CALCULADORA ================= -->
+  <section id="tab-calc" class="tab activo">
+    <div class="card">
+      <h2>Calculadora individual</h2>
+
+      <div id="sin-datos-calc" class="aviso" style="display:none;">
+        Aún no tienes proveedores. Ve a la pestaña <b>Proveedores</b> para agregar tus productos con sus unidades por caja.
+      </div>
+
+      <div class="grid-2">
+        <div>
+          <label for="calc-proveedor">Proveedor</label>
+          <select id="calc-proveedor" onchange="calcCambioProveedor()">
+            <option value="">-- Seleccionar --</option>
+          </select>
+        </div>
+        <div>
+          <label for="calc-sabor">Sabor / Producto</label>
+          <select id="calc-sabor" onchange="calcCambioSabor()">
+            <option value="">-- Seleccionar --</option>
+          </select>
+        </div>
+      </div>
+
+      <div class="grid-3" style="margin-top:12px;">
+        <div>
+          <label for="calc-unidades-caja">Unidades por caja</label>
+          <input type="number" id="calc-unidades-caja" value="0" readonly>
+        </div>
+        <div>
+          <label for="calc-total">Total de unidades</label>
+          <input type="number" id="calc-total" min="0" placeholder="Ej: 337120" oninput="calcCalcular()">
+        </div>
+        <div>
+          <label for="calc-por-pallet">Cajas por pallet</label>
+          <input type="number" id="calc-por-pallet" min="0" placeholder="Ej: 77" oninput="calcCalcular()">
+        </div>
+      </div>
+
+      <div class="resultado" id="calc-resultado">
+        <div class="linea">
+          📦 <b>Cajas totales:</b> <span class="grande" id="res-cajas">0</span>
+          <span class="det" id="res-unidades-sobrantes"></span>
+        </div>
+        <div class="linea">
+          🛠 <b>Pallets:</b> <span id="res-pallets-texto">—</span>
+        </div>
+        <div class="linea">
+          Total de pallets: <b id="res-total-pallets">0</b>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ================= LOTE ================= -->
+  <section id="tab-lote" class="tab">
+    <div class="card">
+      <h2>Lote (varios productos)</h2>
+
+      <div id="sin-datos-lote" class="aviso" style="display:none;">
+        Aún no tienes proveedores. Ve a la pestaña <b>Proveedores</b> para agregar tus productos.
+      </div>
+
+      <div class="grid-2" style="margin-bottom:12px;">
+        <div>
+          <label for="lote-por-pallet">Cajas por pallet (para todo el lote)</label>
+          <input type="number" id="lote-por-pallet" min="0" placeholder="Ej: 77" oninput="renderLote()">
+        </div>
+        <div style="display:flex; align-items:flex-end;">
+          <button class="btn btn-primario" onclick="agregarFila()">➕ Agregar fila</button>
+        </div>
+      </div>
+
+      <div style="overflow-x:auto;">
+        <table class="tabla-lote" id="tabla-lote">
+          <thead>
+            <tr>
+              <th>Proveedor</th>
+              <th>Sabor</th>
+              <th>Unid./caja</th>
+              <th>Total unid.</th>
+              <th>Resultado</th>
+              <th></th>
+            </tr>
+          </thead>
+          <tbody id="cuerpo-lote"></tbody>
+        </table>
+      </div>
+
+      <div class="total-lote" id="total-lote" style="display:none;">
+        <div>📦 <b>Total de cajas:</b> <span class="grande" id="lote-total-cajas">0</span></div>
+        <div style="margin-top:6px;">🛠 <b>Total de pallets:</b> <span class="grande" id="lote-total-pallets">0</span></div>
+        <div id="lote-detalle" class="det" style="margin-top:6px; color:#52606d;"></div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ================= PROVEEDORES ================= -->
+  <section id="tab-prov" class="tab">
+    <div class="card">
+      <h2>Agregar proveedor</h2>
+      <div class="form-alta">
+        <input type="text" id="nuevo-proveedor-nombre" placeholder="Nombre del proveedor (Ej: Krezco S.A.)">
+        <button class="btn btn-primario" onclick="agregarProveedor()">➕ Agregar</button>
+      </div>
+    </div>
+
+    <div class="card">
+      <h2>Mis proveedores y sabores</h2>
+      <div id="lista-proveedores"></div>
+      <div id="sin-proveedores" class="aviso">No hay proveedores registrados todavía.</div>
+    </div>
+  </section>
+</main>
+
+<div class="pie">Datos guardados localmente en este dispositivo.</div>
+
+<script>
+  const STORAGE_KEY = 'calculadoraPalletsProveedores';
+  let proveedores = cargarProveedores();
+
+  function cargarProveedores() {
+    try { return JSON.parse(localStorage.getItem(STORAGE_KEY)) || []; }
+    catch (e) { return []; }
+  }
+  function guardarProveedores() {
+    localStorage.setItem(STORAGE_KEY, JSON.stringify(proveedores));
+  }
+
+  function cambiarTab(nombre) {
+    document.querySelectorAll('.tab').forEach(t => t.classList.remove('activo'));
+    document.querySelectorAll('nav button').forEach(b => b.classList.remove('activo'));
+    document.getElementById('tab-' + nombre).classList.add('activo');
+    document.getElementById('btn-tab-' + nombre).classList.add('activo');
+    if (nombre === 'lote') renderLote();
+  }
+
+  function formatear(n) {
+    return Number(n).toLocaleString('es-CO');
+  }
+
+  function calcCajas(totalUnidades, unidadesPorCaja) {
+    if (!unidadesPorCaja || unidadesPorCaja <= 0) return null;
+    const cajas = Math.floor(totalUnidades / unidadesPorCaja);
+    const sobrante = totalUnidades % unidadesPorCaja;
+    return { cajas, sobrante };
+  }
+
+  function calcPallets(totalCajas, porPallet) {
+    if (!porPallet || porPallet <= 0) return null;
+    const llenos = Math.floor(totalCajas / porPallet);
+    const restantes = totalCajas % porPallet;
+    let texto = '';
+    if (llenos > 0) texto += llenos + ' pallet' + (llenos > 1 ? 's' : '') + ' de ' + formatear(porPallet) + ' cajas';
+    if (restantes > 0) {
+      if (texto) texto += ' y ';
+      texto += '1 pallet de ' + formatear(restantes) + ' cajas';
+    }
+    if (totalCajas === 0) texto = '0 pallets';
+    return { llenos, restantes, total: llenos + (restantes > 0 ? 1 : 0), texto };
+  }
+
+  function llenarSelectProveedores(select) {
+    select.innerHTML = '<option value="">-- Seleccionar --</option>';
+    proveedores.forEach(p => {
+      const op = document.createElement('option');
+      op.value = p.id;
+      op.textContent = p.nombre;
+      select.appendChild(op);
+    });
+  }
+
+  function llenarSelectSabores(select, proveedorId) {
+    select.innerHTML = '<option value="">-- Seleccionar --</option>';
+    const p = proveedores.find(x => x.id === proveedorId);
+    if (!p) return;
+    p.sabores.forEach(s => {
+      const op = document.createElement('option');
+      op.value = s.id;
+      op.textContent = s.nombre + ' (' + formatear(s.unidadesPorCaja) + ' unid./caja)';
+      select.appendChild(op);
+    });
+  }
+
+  function obtenerSabor(proveedorId, saborId) {
+    const p = proveedores.find(x => x.id === proveedorId);
+    if (!p) return null;
+    return p.sabores.find(s => s.id === saborId) || null;
+  }
+
+  function generarId() {
+    return 'id_' + Date.now().toString(36) + '_' + Math.random().toString(36).slice(2, 8);
+  }
+
+  // ============ PROVEEDORES ============
+  function agregarProveedor() {
+    const nombre = document.getElementById('nuevo-proveedor-nombre').value.trim();
+    if (!nombre) { alert('Escribe el nombre del proveedor.'); return; }
+    proveedores.push({ id: generarId(), nombre, sabores: [] });
+    guardarProveedores();
+    document.getElementById('nuevo-proveedor-nombre').value = '';
+    renderProveedores();
+  }
+
+  function eliminarProveedor(id) {
+    if (!confirm('¿Eliminar este proveedor con todos sus sabores?')) return;
+    proveedores = proveedores.filter(p => p.id !== id);
+    guardarProveedores();
+    renderProveedores();
+  }
+
+  function agregarSabor(proveedorId) {
+    const cont = document.getElementById('sabor-input-' + proveedorId);
+    const nombre = cont.querySelector('.sabor-nombre').value.trim();
+    const unidades = parseInt(cont.querySelector('.sabor-unidades').value, 10);
+    if (!nombre) { alert('Escribe el nombre del sabor/producto.'); return; }
+    if (!unidades || unidades <= 0) { alert('Escribe cuántas unidades tiene cada caja.'); return; }
+    const p = proveedores.find(x => x.id === proveedorId);
+    p.sabores.push({ id: generarId(), nombre, unidadesPorCaja: unidades });
+    guardarProveedores();
+    renderProveedores();
+  }
+
+  function eliminarSabor(proveedorId, saborId) {
+    const p = proveedores.find(x => x.id === proveedorId);
+    p.sabores = p.sabores.filter(s => s.id !== saborId);
+    guardarProveedores();
+    renderProveedores();
+  }
+
+  function renderProveedores() {
+    const lista = document.getElementById('lista-proveedores');
+    const vacio = document.getElementById('sin-proveedores');
+    lista.innerHTML = '';
+
+    if (proveedores.length === 0) {
+      vacio.style.display = 'block';
+    } else {
+      vacio.style.display = 'none';
+      proveedores.forEach(p => {
+        const div = document.createElement('div');
+        div.className = 'proveedor';
+
+        let saboresHtml = '';
+        if (p.sabores.length === 0) {
+          saboresHtml = '<div style="color:#94a3b8; font-size:.85rem;">Sin sabores. Agrega el primero abajo.</div>';
+        } else {
+          saboresHtml = p.sabores.map(s =>
+            '<div class="fila-sabor">' +
+              '<span>🍬 ' + s.nombre + ' — <b>' + formatear(s.unidadesPorCaja) + ' unid./caja</b></span>' +
+              '<button title="Eliminar" onclick="eliminarSabor(\'' + p.id + '\',\'' + s.id + '\')">✕</button>' +
+            '</div>'
+          ).join('');
+        }
+
+        div.innerHTML =
+          '<div class="proveedor-header">' +
+            '<h3>🏭 ' + p.nombre + '</h3>' +
+            '<button class="btn btn-peligro" onclick="eliminarProveedor(\'' + p.id + '\')">🗑 Eliminar</button>' +
+          '</div>' +
+          saboresHtml +
+          '<div class="nuevo-sabor" id="sabor-input-' + p.id + '">' +
+            '<input type="text" class="sabor-nombre" placeholder="Nombre del sabor">' +
+            '<input type="number" class="sabor-unidades" placeholder="Unid./caja">' +
+            '<button class="btn btn-primario" onclick="agregarSabor(\'' + p.id + '\')">➕ Agregar</button>' +
+          '</div>';
+
+        lista.appendChild(div);
+      });
+    }
+
+    llenarSelectProveedores(document.getElementById('calc-proveedor'));
+  }
+
+  // ============ CALCULADORA ============
+  function calcCambioProveedor() {
+    const sel = document.getElementById('calc-proveedor');
+    llenarSelectSabores(document.getElementById('calc-sabor'), sel.value);
+    document.getElementById('calc-unidades-caja').value = '';
+    document.getElementById('calc-resultado').classList.remove('visible');
+  }
+
+  function calcCambioSabor() {
+    const pId = document.getElementById('calc-proveedor').value;
+    const sId = document.getElementById('calc-sabor').value;
+    const sabor = obtenerSabor(pId, sId);
+    document.getElementById('calc-unidades-caja').value = sabor ? sabor.unidadesPorCaja : '';
+    calcCalcular();
+  }
+
+  function calcCalcular() {
+    const resultado = document.getElementById('calc-resultado');
+    const unidadesPorCaja = parseFloat(document.getElementById('calc-unidades-caja').value);
+    const totalUnidades = parseFloat(document.getElementById('calc-total').value);
+    const porPallet = parseFloat(document.getElementById('calc-por-pallet').value);
+
+    if (!unidadesPorCaja || unidadesPorCaja <= 0 || isNaN(totalUnidades)) {
+      resultado.classList.remove('visible');
+      return;
+    }
+
+    const c = calcCajas(totalUnidades, unidadesPorCaja);
+    document.getElementById('res-cajas').textContent = formatear(c.cajas);
+    document.getElementById('res-unidades-sobrantes').textContent =
+      c.sobrante > 0 ? '(+ ' + formatear(c.sobrante) + ' unidades sueltas)' : '';
+
+    if (porPallet && porPallet > 0) {
+      const p = calcPallets(c.cajas, porPallet);
+      document.getElementById('res-pallets-texto').textContent = p.texto;
+      document.getElementById('res-total-pallets').textContent = formatear(p.total);
+    } else {
+      document.getElementById('res-pallets-texto').textContent = 'Escribe las cajas por pallet';
+      document.getElementById('res-total-pallets').textContent = '—';
+    }
+    resultado.classList.add('visible');
+  }
+
+  // ============ LOTE ============
+  function agregarFila() {
+    const tbody = document.getElementById('cuerpo-lote');
+    const tr = document.createElement('tr');
+    tr.className = 'fila-lote';
+    tr.dataset.fila = '1';
+    tr.innerHTML =
+      '<td><select class="sel-prov" onchange="filaCambioProv(this)">' +
+        '<option value="">-- Proveedor --</option>' +
+        proveedores.map(p => '<option value="' + p.id + '">' + p.nombre + '</option>').join('') +
+      '</select></td>' +
+      '<td><select class="sel-sab" onchange="filaCambioSabor(this)"><option value="">-- Sabor --</option></select></td>' +
+      '<td><input type="number" class="inp-unid" value="" readonly style="text-align:center;"></td>' +
+      '<td><input type="number" class="inp-total" min="0" placeholder="Total unid." oninput="filaCalc(this)"></td>' +
+      '<td><div class="resumen-fila">—</div></td>' +
+      '<td><button class="btn btn-peligro" onclick="eliminarFila(this)">✕</button></td>';
+    tbody.appendChild(tr);
+    renderLote();
+  }
+
+  function eliminarFila(btn) {
+    btn.closest('tr').remove();
+    renderLote();
+  }
+
+  function filaCambioProv(sel) {
+    const tr = sel.closest('tr');
+    llenarSelectSabores(tr.querySelector('.sel-sab'), sel.value);
+    tr.querySelector('.inp-unid').value = '';
+    filaCalc(sel);
+  }
+
+  function filaCambioSabor(sel) {
+    const tr = sel.closest('tr');
+    const sabor = obtenerSabor(tr.querySelector('.sel-prov').value, sel.value);
+    tr.querySelector('.inp-unid').value = sabor ? sabor.unidadesPorCaja : '';
+    filaCalc(sel);
+  }
+
+  function filaCalc(el) {
+    const tr = el.closest('tr');
+    const unidadesPorCaja = parseFloat(tr.querySelector('.inp-unid').value);
+    const totalUnidades = parseFloat(tr.querySelector('.inp-total').value);
+    const resumen = tr.querySelector('.resumen-fila');
+    const porPallet = parseFloat(document.getElementById('lote-por-pallet').value);
+
+    if (!unidadesPorCaja || unidadesPorCaja <= 0 || isNaN(totalUnidades)) {
+      resumen.innerHTML = '—';
+    } else {
+      const c = calcCajas(totalUnidades, unidadesPorCaja);
+      let html = '📦 <b>' + formatear(c.cajas) + '</b> cajas';
+      if (c.sobrante > 0) html += ' <span class="det">(+' + formatear(c.sobrante) + ' unid.)</span>';
+      if (porPallet && porPallet > 0) {
+        const p = calcPallets(c.cajas, porPallet);
+        html += '<br>🛠 ' + p.texto;
+      }
+      resumen.innerHTML = html;
+    }
+    renderResumenLote();
+  }
+
+  function renderResumenLote() {
+    const filas = document.querySelectorAll('#cuerpo-lote tr');
+    const totalBox = document.getElementById('total-lote');
+    let totalCajas = 0, totalPallets = 0, n = 0;
+    let detalle = [];
+    const porPallet = parseFloat(document.getElementById('lote-por-pallet').value);
+
+    filas.forEach(tr => {
+      const unidadesPorCaja = parseFloat(tr.querySelector('.inp-unid').value);
+      const totalUnidades = parseFloat(tr.querySelector('.inp-total').value);
+      if (!unidadesPorCaja || unidadesPorCaja <= 0 || isNaN(totalUnidades)) return;
+      const c = calcCajas(totalUnidades, unidadesPorCaja);
+      totalCajas += c.cajas;
+      if (porPallet && porPallet > 0) {
+        const p = calcPallets(c.cajas, porPallet);
+        totalPallets += p.total;
+        detalle.push('· ' + p.texto);
+      }
+      n++;
+    });
+
+    if (n === 0) {
+      totalBox.style.display = 'none';
+      return;
+    }
+    document.getElementById('lote-total-cajas').textContent = formatear(totalCajas);
+    document.getElementById('lote-total-pallets').textContent =
+      porPallet && porPallet > 0 ? formatear(totalPallets) : '—';
+    document.getElementById('lote-detalle').innerHTML = detalle.join('<br>');
+    totalBox.style.display = 'block';
+  }
+
+  function renderLote() {
+    const aviso = document.getElementById('sin-datos-lote');
+    const porPallet = document.getElementById('lote-por-pallet').value;
+
+    if (proveedores.length === 0) {
+      aviso.style.display = 'block';
+      document.getElementById('tabla-lote').style.display = 'none';
+      return;
+    }
+    aviso.style.display = 'none';
+    document.getElementById('tabla-lote').style.display = '';
+
+    if (document.getElementById('cuerpo-lote').children.length === 0 && porPallet === '') {
+      document.getElementById('lote-por-pallet').value = '77';
+    }
+    document.querySelectorAll('#cuerpo-lote tr').forEach(tr => filaCalc(tr.querySelector('.inp-total')));
+  }
+
+  // ============ INICIO ============
+  renderProveedores();
+  const calcProv = document.getElementById('calc-proveedor');
+  const sinDatos = document.getElementById('sin-datos-calc');
+  if (proveedores.length === 0) sinDatos.style.display = 'block';
+
+  calcProv.addEventListener('change', () => {
+    if (proveedores.length === 0) sinDatos.style.display = 'block';
+    else sinDatos.style.display = 'none';
+  });
+</script>
+</body>
+</html>
