@@ -232,6 +232,8 @@
   .total-general .grande { font-size: 1.35rem; font-weight: 800; color: var(--acento); }
   .total-general .linea { margin-top: 6px; font-size: .98rem; }
   .total-general .detalle { margin-top: 8px; color: var(--muted); font-size: .88rem; }
+  .compartir-botones { display: flex; gap: 8px; margin-top: 14px; flex-wrap: wrap; }
+  .compartir-botones .btn { flex: 1; min-width: 150px; }
 
   /* ---------- PROVEEDORES ---------- */
   .proveedor {
@@ -370,6 +372,10 @@
       <div class="linea">📦 <b>Cajas totales:</b> <span class="grande" id="total-cajas">0</span></div>
       <div class="linea">🛠 <b>Total de pallets:</b> <span class="grande" id="total-pallets">0</span></div>
       <div class="detalle" id="total-detalle"></div>
+      <div class="compartir-botones">
+        <button class="btn btn-primario" onclick="compartirWhatsApp()">📤 Compartir por WhatsApp</button>
+        <button class="btn btn-gris" onclick="copiarResumen()">📋 Copiar resumen</button>
+      </div>
     </div>
   </section>
 
@@ -750,7 +756,10 @@
             '<h3>🏷️ ' + l.nombre + '</h3>' +
             '<span class="lote-sub">🏭 ' + l.proveedorNombre + ' · 🍬 ' + l.saborNombre + ' · ' + formatear(l.unidadesPorCaja) + ' unid./caja</span>' +
           '</div>' +
-          '<button class="btn btn-peligro" onclick="eliminarLote(\'' + l.id + '\')">🗑</button>' +
+          '<div class="acciones">' +
+            '<button class="btn btn-gris" title="Compartir por WhatsApp" onclick="compartirLote(\'' + l.id + '\')">📤</button>' +
+            '<button class="btn btn-peligro" onclick="eliminarLote(\'' + l.id + '\')">🗑</button>' +
+          '</div>' +
         '</div>' +
         '<div class="lote-datos">' +
           '<div class="caja-dato"><span class="etiqueta">Unidades</span><span class="valor">' + formatear(l.unidades) + '</span></div>' +
@@ -774,6 +783,93 @@
     }
     document.getElementById('total-detalle').textContent = detalle;
     totalBox.style.display = 'block';
+  }
+
+  // ============ COMPARTIR ============
+  function obtenerFecha() {
+    const d = new Date();
+    const opciones = { day: '2-digit', month: '2-digit', year: 'numeric', hour: '2-digit', minute: '2-digit' };
+    return d.toLocaleString('es-CO', opciones);
+  }
+
+  function porPalletValor() {
+    return parseFloat(document.getElementById('calc-por-pallet').value);
+  }
+
+  function generarResumenLote(l) {
+    const porPallet = porPalletValor();
+    const c = calcCajas(l.unidades, l.unidadesPorCaja);
+    const p = porPallet && porPallet > 0 ? calcPallets(c.cajas, porPallet) : null;
+    let lineas = [];
+    lineas.push('📦 *CÁLCULO DE PALLETS*');
+    lineas.push('🗓 ' + obtenerFecha());
+    lineas.push('');
+    lineas.push('🏷️ ' + l.nombre);
+    lineas.push('   🏭 ' + l.proveedorNombre + ' · 🍬 ' + l.saborNombre + ' (' + formatear(l.unidadesPorCaja) + ' unid./caja)');
+    lineas.push('   • ' + formatear(l.unidades) + ' unidades → ' + formatear(c.cajas) + ' cajas' + (c.sobrante > 0 ? ' (+' + formatear(c.sobrante) + ' unid.)' : ''));
+    if (p) lineas.push('   • ' + p.texto + ' → ' + formatear(p.total) + ' pallets');
+    return lineas.join('\n');
+  }
+
+  function generarResumen() {
+    const porPallet = porPalletValor();
+    let lineas = [];
+    lineas.push('📦 *CÁLCULO DE PALLETS*');
+    lineas.push('🗓 ' + obtenerFecha());
+    lineas.push('📋 Cajas por pallet: ' + (porPallet && porPallet > 0 ? formatear(porPallet) : '—'));
+    lineas.push('');
+
+    let totalCajas = 0, totalUnidades = 0, totalPallets = 0;
+    lotes.forEach(l => {
+      const c = calcCajas(l.unidades, l.unidadesPorCaja);
+      const p = porPallet && porPallet > 0 ? calcPallets(c.cajas, porPallet) : null;
+      totalCajas += c.cajas;
+      totalUnidades += l.unidades;
+      if (p) totalPallets += p.total;
+
+      lineas.push('🏷️ ' + l.nombre);
+      lineas.push('   🏭 ' + l.proveedorNombre + ' · 🍬 ' + l.saborNombre + ' (' + formatear(l.unidadesPorCaja) + ' unid./caja)');
+      lineas.push('   • ' + formatear(l.unidades) + ' unidades → ' + formatear(c.cajas) + ' cajas' + (c.sobrante > 0 ? ' (+' + formatear(c.sobrante) + ' unid.)' : ''));
+      if (p) lineas.push('   • ' + p.texto + ' → ' + formatear(p.total) + ' pallets');
+      lineas.push('');
+    });
+
+    lineas.push('✅ *RESUMEN*');
+    lineas.push('   Total unidades: ' + formatear(totalUnidades));
+    lineas.push('   Total cajas: ' + formatear(totalCajas));
+    lineas.push('   Total pallets: ' + (totalPallets > 0 ? formatear(totalPallets) : '—'));
+    if (porPallet && porPallet > 0) {
+      const tp = calcPallets(totalCajas, porPallet);
+      lineas.push('   Desglose: ' + tp.texto);
+    }
+    return lineas.join('\n');
+  }
+
+  function compartirWhatsApp() {
+    if (lotes.length === 0) { alert('Agrega al menos un lote para compartir.'); return; }
+    const url = 'https://api.whatsapp.com/send?text=' + encodeURIComponent(generarResumen());
+    window.open(url, '_blank');
+  }
+
+  function compartirLote(id) {
+    const l = lotes.find(x => x.id === id);
+    if (!l) return;
+    const url = 'https://api.whatsapp.com/send?text=' + encodeURIComponent(generarResumenLote(l));
+    window.open(url, '_blank');
+  }
+
+  function copiarResumen() {
+    if (lotes.length === 0) { alert('Agrega al menos un lote para copiar.'); return; }
+    const texto = generarResumen();
+    if (navigator.clipboard && navigator.clipboard.writeText) {
+      navigator.clipboard.writeText(texto).then(function () {
+        alert('✅ Resumen copiado al portapapeles.');
+      }).catch(function () {
+        prompt('Copia el resumen:', texto);
+      });
+    } else {
+      prompt('Copia el resumen:', texto);
+    }
   }
 
   // ============ INICIO ============
