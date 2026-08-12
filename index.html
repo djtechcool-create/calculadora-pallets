@@ -187,6 +187,19 @@
     color: #fde68a;
   }
 
+  .seg { display: flex; border: 1px solid var(--borde); border-radius: 8px; overflow: hidden; }
+  .seg button {
+    flex: 1;
+    padding: 10px;
+    background: transparent;
+    color: var(--muted);
+    border: none;
+    font-weight: 700;
+    font-size: .9rem;
+    cursor: pointer;
+  }
+  .seg button.activo { background: var(--acento); color: #fff; }
+
   /* ---------- LOTES ---------- */
   .lote-card { padding: 14px; }
   .lote-header {
@@ -197,33 +210,35 @@
     flex-wrap: wrap;
     margin-bottom: 8px;
   }
-  .lote-header h3 { font-size: 1.08rem; color: var(--texto); }
+  .lote-header h3 { font-size: 1.08rem; }
   .lote-sub { font-size: .78rem; color: var(--muted); display: block; margin-top: 2px; }
-  .lote-datos { display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px; margin: 10px 0; }
-  .caja-dato {
+  .lote-entrada { background: var(--entrada-leida); border-radius: 8px; padding: 10px; margin: 8px 0; }
+  .lote-entrada .seg { margin-bottom: 10px; }
+  .lote-cajas-auto { display: block; font-size: .82rem; color: var(--muted); margin-top: 4px; }
+
+  .pallet-plan { margin-top: 10px; }
+  .plan-titulo { font-size: .9rem; font-weight: 800; color: var(--muted); text-transform: uppercase; letter-spacing: .5px; margin-bottom: 8px; }
+  .grupo {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    flex-wrap: wrap;
     background: var(--entrada-leida);
     border-radius: 8px;
-    padding: 10px;
-    text-align: center;
+    padding: 8px;
+    margin-bottom: 8px;
   }
-  .caja-dato .etiqueta {
-    display: block;
-    font-size: .68rem;
-    text-transform: uppercase;
-    letter-spacing: .5px;
-    color: var(--muted);
-    font-weight: 700;
-  }
-  .caja-dato .valor { font-size: 1.2rem; font-weight: 800; color: var(--acento); display: block; margin-top: 2px; }
-  .caja-dato .det { font-size: .72rem; color: var(--muted); }
-  .lote-pallets {
-    font-size: .92rem;
-    background: var(--acento-suave);
-    border: 1px dashed var(--acento-borde);
-    border-radius: 8px;
-    padding: 10px;
-  }
-  .lote-pallets b { color: var(--acento); }
+  .grupo input { width: 86px; padding: 8px; text-align: center; }
+  .grupo .g-sep { font-size: .8rem; color: var(--muted); }
+  .grupo-resultado { font-weight: 800; color: var(--acento); min-width: 90px; font-size: .95rem; }
+  .btn-ico { background: none; border: none; cursor: pointer; font-size: 1rem; color: var(--muted); padding: 4px 6px; border-radius: 6px; }
+  .btn-ico:hover { background: var(--entrada-leida); color: var(--acento); }
+  .btn-ico.eliminar:hover { color: #e53e3e; }
+  .plan-info { margin-top: 10px; font-size: .95rem; }
+  .plan-cajas b, .plan-total b { color: var(--acento); }
+  .plan-sobrante { margin-top: 4px; }
+  .plan-sobrepasa { color: #e53e3e; font-weight: 700; margin-top: 4px; }
+  .plan-total { font-size: 1.05rem; font-weight: 800; color: var(--acento); margin-top: 6px; }
   .pallet-visual { display: flex; flex-wrap: wrap; gap: 4px; align-items: center; margin-top: 10px; }
   .pbox { width: 16px; height: 16px; border-radius: 3px; }
   .pbox.lleno { background: var(--acento); }
@@ -265,9 +280,6 @@
   }
   .fila-sabor:last-child { border-bottom: none; }
   .fila-sabor .nom b { color: var(--acento); }
-  .fila-sabor .btn-ico { background: none; border: none; cursor: pointer; font-size: 1rem; color: var(--muted); padding: 4px 6px; border-radius: 6px; }
-  .fila-sabor .btn-ico:hover { background: var(--entrada-leida); color: var(--acento); }
-  .fila-sabor .btn-ico.eliminar:hover { color: #e53e3e; }
   .editar-campos { display: flex; gap: 8px; width: 100%; flex-wrap: wrap; align-items: center; }
   .editar-campos input { flex: 1; min-width: 120px; padding: 8px; }
   .editar-campos .mini { max-width: 130px; }
@@ -288,9 +300,7 @@
     .grid-2, .grid-3 { grid-template-columns: 1fr; }
     main { padding: 12px; }
     input, select { font-size: 16px; }
-    .lote-datos { gap: 6px; }
-    .caja-dato { padding: 8px 4px; }
-    .caja-dato .valor { font-size: 1.05rem; }
+    .grupo input { width: 70px; }
     .btn { padding: 12px 14px; }
   }
 </style>
@@ -338,28 +348,39 @@
           <label for="calc-unidades-caja">Unidades por caja (auto)</label>
           <input type="number" id="calc-unidades-caja" value="0" readonly>
         </div>
-        <div>
-          <label for="calc-por-pallet">Cajas por pallet</label>
-          <input type="number" id="calc-por-pallet" value="77" min="0" oninput="renderLotes()">
-        </div>
+        <div></div>
       </div>
     </div>
 
     <div class="card">
       <h2>Agregar lote</h2>
-      <div class="grid-3">
+      <div class="grid-2">
         <div>
           <label for="lote-nombre">Nombre del lote</label>
-          <input type="text" id="lote-nombre" placeholder="Ej: Lote 25">
+          <input type="text" id="lote-nombre" placeholder="Ej: LOTE 25">
         </div>
         <div>
-          <label for="lote-unidades">Total de unidades</label>
-          <input type="number" id="lote-unidades" min="0" placeholder="Ej: 30600" onkeydown="if(event.key==='Enter')agregarLote()">
+          <label for="lote-producto-info">Producto seleccionado</label>
+          <input type="text" id="lote-producto-info" value="—" readonly>
+        </div>
+      </div>
+      <div style="margin-top:12px;">
+        <label>El total del lote viene en:</label>
+        <div class="seg">
+          <button id="modo-alta-unidades" class="activo" onclick="setModoAlta('unidades')">📦 UNIDADES</button>
+          <button id="modo-alta-cajas" onclick="setModoAlta('cajas')">📦 CAJAS</button>
+        </div>
+      </div>
+      <div class="grid-2" style="margin-top:12px;">
+        <div>
+          <label id="lote-total-label">Total de unidades</label>
+          <input type="number" id="lote-total" min="0" placeholder="Ej: 30600" oninput="actualizarPreview()" onkeydown="if(event.key==='Enter')agregarLote()">
         </div>
         <div style="display:flex; align-items:flex-end;">
           <button class="btn btn-primario" onclick="agregarLote()">➕ Agregar lote</button>
         </div>
       </div>
+      <div id="lote-preview" class="aviso" style="display:none; margin-top:10px;"></div>
     </div>
 
     <div id="lista-lotes"></div>
@@ -391,7 +412,7 @@
     <div class="card">
       <h2>Agregar proveedor</h2>
       <div class="form-alta">
-        <input type="text" id="nuevo-proveedor-nombre" placeholder="Nombre del proveedor (Ej: Krezco S.A.)">
+        <input type="text" id="nuevo-proveedor-nombre" placeholder="Nombre del proveedor (Ej: KREZCO S.A.)">
         <button class="btn btn-primario" onclick="agregarProveedor()">➕ Agregar</button>
       </div>
     </div>
@@ -411,6 +432,7 @@
   const STORAGE_LOTES = 'calculadoraPalletsLotes';
   let proveedores = cargarProveedores();
   let lotes = cargarLotes();
+  let modoAlta = 'unidades';
 
   // ============ TEMA ============
   function aplicarTema() {
@@ -444,6 +466,7 @@
     });
   }
 
+  // Mayúsculas automáticas en campos de texto
   document.addEventListener('input', function (e) {
     const el = e.target;
     if (el && el.tagName === 'INPUT' && el.type !== 'number') {
@@ -459,7 +482,19 @@
     localStorage.setItem(STORAGE_KEY, JSON.stringify(proveedores));
   }
   function cargarLotes() {
-    try { return JSON.parse(localStorage.getItem(STORAGE_LOTES)) || []; }
+    try {
+      let lista = JSON.parse(localStorage.getItem(STORAGE_LOTES)) || [];
+      lista.forEach(function (l) {
+        if (!l.modo) l.modo = 'unidades';
+        if (!l.grupos) {
+          const cajas = Math.floor((l.unidades || 0) / (l.unidadesPorCaja || 1));
+          l.grupos = cajas > 0 && cajas <= 77
+            ? [{ cantidad: 1, cajasPorPallet: cajas }]
+            : [{ cantidad: Math.max(1, Math.floor(cajas / 77)), cajasPorPallet: 77 }];
+        }
+      });
+      return lista;
+    }
     catch (e) { return []; }
   }
   function guardarLotes() {
@@ -478,24 +513,8 @@
   }
 
   function calcCajas(totalUnidades, unidadesPorCaja) {
-    if (!unidadesPorCaja || unidadesPorCaja <= 0) return null;
-    const cajas = Math.floor(totalUnidades / unidadesPorCaja);
-    const sobrante = totalUnidades % unidadesPorCaja;
-    return { cajas, sobrante };
-  }
-
-  function calcPallets(totalCajas, porPallet) {
-    if (!porPallet || porPallet <= 0) return null;
-    const llenos = Math.floor(totalCajas / porPallet);
-    const restantes = totalCajas % porPallet;
-    let texto = '';
-    if (llenos > 0) texto += llenos + ' pallet' + (llenos > 1 ? 's' : '') + ' de ' + formatear(porPallet) + ' cajas';
-    if (restantes > 0) {
-      if (texto) texto += ' y ';
-      texto += '1 pallet de ' + formatear(restantes) + ' cajas';
-    }
-    if (totalCajas === 0) texto = '0 pallets';
-    return { llenos, restantes, total: llenos + (restantes > 0 ? 1 : 0), texto };
+    if (!unidadesPorCaja || unidadesPorCaja <= 0) return 0;
+    return Math.floor(totalUnidades / unidadesPorCaja);
   }
 
   function llenarSelectProveedores(select) {
@@ -560,7 +579,7 @@
   function cancelarProv() { editProvId = null; renderProveedores(); }
 
   function eliminarProveedor(id) {
-    if (!confirm('¿Eliminar este proveedor con todos sus sabores?')) return;
+    if (!confirm('¿Eliminar este proveedor con todos sus productos?')) return;
     proveedores = proveedores.filter(p => p.id !== id);
     guardarProveedores();
     renderProveedores();
@@ -584,7 +603,7 @@
     const cont = document.getElementById('sabor-input-' + proveedorId);
     const nombre = cont.querySelector('.sabor-nombre').value.trim();
     const unidades = parseInt(cont.querySelector('.sabor-unidades').value, 10);
-    if (!nombre) { alert('Escribe el nombre del sabor/producto.'); return; }
+    if (!nombre) { alert('Escribe el nombre del producto.'); return; }
     if (!unidades || unidades <= 0) { alert('Escribe cuántas unidades tiene cada caja.'); return; }
     const p = obtenerProveedor(proveedorId);
     p.sabores.push({ id: generarId(), nombre, unidadesPorCaja: unidades });
@@ -631,7 +650,7 @@
 
         let saboresHtml = '';
         if (p.sabores.length === 0) {
-          saboresHtml = '<div style="color:var(--muted); font-size:.85rem;">Sin sabores. Agrega el primero abajo.</div>';
+          saboresHtml = '<div style="color:var(--muted); font-size:.85rem;">Sin productos. Agrega el primero abajo.</div>';
         } else {
           saboresHtml = p.sabores.map(s => {
             if (editSaborId.p === p.id && editSaborId.s === s.id) {
@@ -670,41 +689,71 @@
     llenarSelectProveedores(document.getElementById('calc-proveedor'));
   }
 
-  // ============ CALCULADORA ============
-  function calcCambioProveedor() {
-    const sel = document.getElementById('calc-proveedor');
-    llenarSelectSabores(document.getElementById('calc-sabor'), sel.value);
-    document.getElementById('calc-unidades-caja').value = '';
+  // ============ ALTA DE LOTE ============
+  function setModoAlta(modo) {
+    modoAlta = modo;
+    document.getElementById('modo-alta-unidades').classList.toggle('activo', modo === 'unidades');
+    document.getElementById('modo-alta-cajas').classList.toggle('activo', modo === 'cajas');
+    document.getElementById('lote-total-label').textContent = modo === 'unidades' ? 'Total de unidades' : 'Total de cajas';
+    document.getElementById('lote-total').placeholder = modo === 'unidades' ? 'Ej: 30600' : 'Ej: 109';
+    actualizarPreview();
   }
 
-  function calcCambioSabor() {
+  function actualizarPreview() {
     const pId = document.getElementById('calc-proveedor').value;
     const sId = document.getElementById('calc-sabor').value;
     const sabor = obtenerSabor(pId, sId);
-    document.getElementById('calc-unidades-caja').value = sabor ? sabor.unidadesPorCaja : '';
+    const total = parseFloat(document.getElementById('lote-total').value);
+    const preview = document.getElementById('lote-preview');
+    if (!sabor) { preview.style.display = 'none'; return; }
+    if (!total || total <= 0) { preview.style.display = 'none'; return; }
+    let txt;
+    if (modoAlta === 'unidades') {
+      const cajas = calcCajas(total, sabor.unidadesPorCaja);
+      txt = '📦 ' + formatear(total) + ' unidades → <b>' + formatear(cajas) + ' cajas</b> (' + formatear(sabor.unidadesPorCaja) + ' unid./caja).';
+    } else {
+      txt = '📦 Total: <b>' + formatear(total) + ' cajas</b>.';
+    }
+    preview.innerHTML = txt;
+    preview.style.display = 'block';
   }
 
   function agregarLote() {
     const pId = document.getElementById('calc-proveedor').value;
     const sId = document.getElementById('calc-sabor').value;
     const sabor = obtenerSabor(pId, sId);
-    if (!sabor) { alert('Selecciona primero un proveedor y un sabor.'); return; }
-    const unidades = parseFloat(document.getElementById('lote-unidades').value);
-    if (!unidades || unidades <= 0) { alert('Escribe el total de unidades del lote.'); return; }
+    if (!sabor) { alert('Selecciona primero un proveedor y un producto.'); return; }
+    const total = parseFloat(document.getElementById('lote-total').value);
+    if (!total || total <= 0) { alert('Escribe el total (unidades o cajas).'); return; }
     let nombre = document.getElementById('lote-nombre').value.trim();
-    if (!nombre) nombre = 'Lote ' + (lotes.length + 1);
+    if (!nombre) nombre = 'LOTE ' + (lotes.length + 1);
+
     const prov = obtenerProveedor(pId);
-    lotes.push({
+    let cajas;
+    let lote = {
       id: generarId(),
       nombre: nombre,
       proveedorNombre: prov.nombre,
       saborNombre: sabor.nombre,
       unidadesPorCaja: sabor.unidadesPorCaja,
-      unidades: unidades
-    });
+      modo: modoAlta
+    };
+    if (modoAlta === 'unidades') {
+      lote.unidades = total;
+      cajas = calcCajas(total, sabor.unidadesPorCaja);
+    } else {
+      lote.cajasDirectas = total;
+      cajas = total;
+    }
+    lote.grupos = cajas > 0 && cajas <= 77
+      ? [{ cantidad: 1, cajasPorPallet: cajas }]
+      : [{ cantidad: Math.max(1, Math.floor(cajas / 77)), cajasPorPallet: 77 }];
+
+    lotes.push(lote);
     guardarLotes();
     document.getElementById('lote-nombre').value = '';
-    document.getElementById('lote-unidades').value = '';
+    document.getElementById('lote-total').value = '';
+    document.getElementById('lote-preview').style.display = 'none';
     renderLotes();
   }
 
@@ -714,11 +763,28 @@
     renderLotes();
   }
 
-  function visualPallets(p) {
+  // ============ CÁLCULO DE LOTE ============
+  function calcularLote(l) {
+    const cajas = l.modo === 'cajas'
+      ? (l.cajasDirectas || 0)
+      : calcCajas(l.unidades || 0, l.unidadesPorCaja || 0);
+    let usado = 0;
+    const grupos = (l.grupos || []).map(g => {
+      const usadas = (g.cantidad || 0) * (g.cajasPorPallet || 0);
+      usado += usadas;
+      return { cantidad: g.cantidad || 0, cap: g.cajasPorPallet || 0, usadas: usadas };
+    });
+    const sobrepasa = usado > cajas;
+    const sobrante = sobrepasa ? 0 : cajas - usado;
+    const totalPallets = grupos.reduce((s, g) => s + g.cantidad, 0) + (sobrante > 0 ? 1 : 0);
+    return { cajas: cajas, grupos: grupos, usado: usado, sobrante: sobrante, sobrepasa: sobrepasa, totalPallets: totalPallets };
+  }
+
+  function visualLote(calc) {
     const MAX = 48;
     const lista = [];
-    for (let i = 0; i < p.llenos; i++) lista.push('lleno');
-    if (p.restantes > 0) lista.push('parcial');
+    calc.grupos.forEach(g => { for (let i = 0; i < g.cantidad; i++) lista.push('lleno'); });
+    if (calc.sobrante > 0 && !calc.sobrepasa) lista.push('parcial');
     let html = '';
     if (lista.length > MAX) {
       html = lista.slice(0, MAX).map(c => '<span class="pbox ' + c + '"></span>').join('');
@@ -729,42 +795,44 @@
     return html;
   }
 
-  function renderLotes() {
-    const cont = document.getElementById('lista-lotes');
-    const sinLotes = document.getElementById('sin-lotes');
-    const totalBox = document.getElementById('total-general');
-    cont.innerHTML = '';
-
-    const porPallet = parseFloat(document.getElementById('calc-por-pallet').value);
-    let totalCajas = 0, totalUnidades = 0, totalPallets = 0, n = 0;
-
-    if (lotes.length === 0) {
-      sinLotes.style.display = 'block';
-      totalBox.style.display = 'none';
-      return;
-    }
-    sinLotes.style.display = 'none';
-
-    lotes.forEach(l => {
-      const c = calcCajas(l.unidades, l.unidadesPorCaja);
-      const p = porPallet && porPallet > 0 ? calcPallets(c.cajas, porPallet) : null;
-
-      totalCajas += c.cajas;
-      totalUnidades += l.unidades;
-      if (p) totalPallets += p.total;
-      n++;
-
-      let palletHtml;
-      if (p) {
-        palletHtml = '🛠 <b>' + p.texto + '</b>' +
-          '<div class="pallet-visual">' + visualPallets(p) + '</div>';
+  function planInfoHTML(calc) {
+    let h = '<div class="plan-cajas"><b>' + formatear(calc.cajas) + '</b> cajas en total</div>';
+    if (calc.sobrepasa) {
+      h += '<div class="plan-sobrepasa">⚠ Los pallets sobrepasan las cajas totales (' + formatear(calc.usado) + ' usadas de ' + formatear(calc.cajas) + ').</div>';
+    } else {
+      if (calc.sobrante > 0) {
+        h += '<div class="plan-sobrante">Sobrante: <b>' + formatear(calc.sobrante) + '</b> cajas → <b>1 pallet de ' + formatear(calc.sobrante) + '</b></div>';
       } else {
-        palletHtml = '🛠 Ingresa las cajas por pallet para ver el desglose.';
+        h += '<div class="plan-sobrante">Sin sobrante: todos los pallets quedan completos.</div>';
       }
+    }
+    h += '<div class="plan-total">Total: <b>' + formatear(calc.totalPallets) + '</b> pallets</div>';
+    return h;
+  }
 
-      const div = document.createElement('div');
-      div.className = 'card lote-card fila-lote';
-      div.innerHTML =
+  function loteCardHTML(l) {
+    const calc = calcularLote(l);
+    const gruposHtml = (l.grupos || []).map((g, idx) =>
+      '<div class="grupo">' +
+        '<input type="number" class="inp-cant" min="0" value="' + g.cantidad + '" oninput="cambioEnLote(this,\'' + l.id + '\')">' +
+        '<span class="g-sep">PALLETS ×</span>' +
+        '<input type="number" class="inp-cap" min="0" value="' + g.cajasPorPallet + '" oninput="cambioEnLote(this,\'' + l.id + '\')">' +
+        '<span class="g-sep">CAJAS</span>' +
+        '<span class="grupo-resultado">' + formatear(g.cantidad * g.cajasPorPallet) + ' cajas</span>' +
+        '<button class="btn-ico eliminar" onclick="quitarGrupo(\'' + l.id + '\',' + idx + ')">✕</button>' +
+      '</div>'
+    ).join('');
+
+    const cajasAuto = l.modo === 'cajas'
+      ? ''
+      : '<span class="lote-cajas-auto">→ ' + formatear(calc.cajas) + ' cajas (' + formatear(l.unidadesPorCaja) + ' unid./caja)</span>';
+
+    const btnModo = function (m, txt) {
+      return '<button class="' + (l.modo === m ? 'activo' : '') + '" onclick="cambiarModoLote(\'' + l.id + '\',\'' + m + '\')">' + txt + '</button>';
+    };
+
+    return '' +
+      '<div class="card lote-card fila-lote" id="lote-wrap-' + l.id + '">' +
         '<div class="lote-header">' +
           '<div>' +
             '<h3>🏷️ ' + l.nombre + '</h3>' +
@@ -775,27 +843,105 @@
             '<button class="btn btn-peligro" onclick="eliminarLote(\'' + l.id + '\')">🗑</button>' +
           '</div>' +
         '</div>' +
-        '<div class="lote-datos">' +
-          '<div class="caja-dato"><span class="etiqueta">Unidades</span><span class="valor">' + formatear(l.unidades) + '</span></div>' +
-          '<div class="caja-dato"><span class="etiqueta">Cajas</span><span class="valor">' + formatear(c.cajas) + '</span>' +
-            (c.sobrante > 0 ? '<span class="det">+' + formatear(c.sobrante) + ' unid.</span>' : '') +
-          '</div>' +
-          '<div class="caja-dato"><span class="etiqueta">Pallets</span><span class="valor">' + (p ? formatear(p.total) : '—') + '</span></div>' +
+        '<div class="lote-entrada">' +
+          '<div class="seg">' + btnModo('unidades', '📦 UNIDADES') + btnModo('cajas', '📦 CAJAS') + '</div>' +
+          '<input type="number" class="inp-total-lote" min="0" value="' + (l.modo === 'cajas' ? (l.cajasDirectas || '') : (l.unidades || '')) + '" oninput="cambioEnLote(this,\'' + l.id + '\')" placeholder="TOTAL">' +
+          cajasAuto +
         '</div>' +
-        '<div class="lote-pallets">' + palletHtml + '</div>';
+        '<div class="pallet-plan">' +
+          '<div class="plan-titulo">🛠 Plan de pallets</div>' +
+          '<div class="grupos">' + gruposHtml + '</div>' +
+          '<button class="btn btn-gris" onclick="agregarGrupo(\'' + l.id + '\')">➕ Agregar grupo</button>' +
+          '<div class="plan-info" id="plan-info-' + l.id + '">' + planInfoHTML(calc) + '</div>' +
+          '<div class="pallet-visual" id="visual-' + l.id + '">' + visualLote(calc) + '</div>' +
+        '</div>' +
+      '</div>';
+  }
 
-      cont.appendChild(div);
-    });
-
-    document.getElementById('total-cajas').textContent = formatear(totalCajas);
-    document.getElementById('total-pallets').textContent = totalPallets > 0 ? formatear(totalPallets) : '—';
-
-    let detalle = 'Sumando todos los lotes: ' + formatear(totalUnidades) + ' unidades totales.';
-    if (porPallet && porPallet > 0) {
-      const tp = calcPallets(totalCajas, porPallet);
-      detalle += ' Desglose combinado: ' + tp.texto + '.';
+  function renderLotes() {
+    const cont = document.getElementById('lista-lotes');
+    const sinLotes = document.getElementById('sin-lotes');
+    cont.innerHTML = '';
+    if (lotes.length === 0) {
+      sinLotes.style.display = 'block';
+      document.getElementById('total-general').style.display = 'none';
+      return;
     }
-    document.getElementById('total-detalle').textContent = detalle;
+    sinLotes.style.display = 'none';
+    lotes.forEach(l => {
+      const tmp = document.createElement('div');
+      tmp.innerHTML = loteCardHTML(l);
+      cont.appendChild(tmp.firstChild);
+    });
+    actualizarResumen();
+  }
+
+  function cambioEnLote(el, lId) {
+    const l = lotes.find(x => x.id === lId);
+    if (!l) return;
+    const card = el.closest('.lote-card');
+    if (l.modo === 'cajas') l.cajasDirectas = parseFloat(card.querySelector('.inp-total-lote').value) || 0;
+    else l.unidades = parseFloat(card.querySelector('.inp-total-lote').value) || 0;
+    l.grupos = Array.from(card.querySelectorAll('.grupo')).map(g => ({
+      cantidad: parseInt(g.querySelector('.inp-cant').value, 10) || 0,
+      cajasPorPallet: parseInt(g.querySelector('.inp-cap').value, 10) || 0
+    }));
+    guardarLotes();
+    actualizarResultados(l, card);
+  }
+
+  function actualizarResultados(l, card) {
+    const calc = calcularLote(l);
+    card.querySelectorAll('.grupo').forEach((g, idx) => {
+      const cant = parseInt(g.querySelector('.inp-cant').value, 10) || 0;
+      const cap = parseInt(g.querySelector('.inp-cap').value, 10) || 0;
+      g.querySelector('.grupo-resultado').textContent = formatear(cant * cap) + ' cajas';
+    });
+    const auto = card.querySelector('.lote-cajas-auto');
+    if (auto) auto.textContent = '→ ' + formatear(calc.cajas) + ' cajas (' + formatear(l.unidadesPorCaja) + ' unid./caja)';
+    card.querySelector('.plan-info').innerHTML = planInfoHTML(calc);
+    card.querySelector('.pallet-visual').innerHTML = visualLote(calc);
+    actualizarResumen();
+  }
+
+  function cambiarModoLote(lId, modo) {
+    const l = lotes.find(x => x.id === lId);
+    if (!l) return;
+    l.modo = modo;
+    guardarLotes();
+    renderLotes();
+  }
+
+  function agregarGrupo(lId) {
+    const l = lotes.find(x => x.id === lId);
+    if (!l) return;
+    l.grupos.push({ cantidad: 1, cajasPorPallet: 77 });
+    guardarLotes();
+    renderLotes();
+  }
+
+  function quitarGrupo(lId, idx) {
+    const l = lotes.find(x => x.id === lId);
+    if (!l) return;
+    if (l.grupos.length <= 1) { alert('Debe haber al menos un grupo de pallets.'); return; }
+    l.grupos.splice(idx, 1);
+    guardarLotes();
+    renderLotes();
+  }
+
+  function actualizarResumen() {
+    const totalBox = document.getElementById('total-general');
+    let totalCajas = 0, totalPallets = 0, n = 0;
+    lotes.forEach(l => {
+      const calc = calcularLote(l);
+      totalCajas += calc.cajas;
+      totalPallets += calc.totalPallets;
+      n++;
+    });
+    if (n === 0) { totalBox.style.display = 'none'; return; }
+    document.getElementById('total-cajas').textContent = formatear(totalCajas);
+    document.getElementById('total-pallets').textContent = formatear(totalPallets);
+    document.getElementById('total-detalle').textContent = 'Sumando los ' + n + ' lote(s): ' + formatear(totalCajas) + ' cajas totales.';
     totalBox.style.display = 'block';
   }
 
@@ -805,8 +951,27 @@
     lotes = [];
     guardarLotes();
     document.getElementById('lote-nombre').value = '';
-    document.getElementById('lote-unidades').value = '';
+    document.getElementById('lote-total').value = '';
+    document.getElementById('lote-preview').style.display = 'none';
     renderLotes();
+  }
+
+  // ============ CALCULADORA (config) ============
+  function calcCambioProveedor() {
+    const sel = document.getElementById('calc-proveedor');
+    llenarSelectSabores(document.getElementById('calc-sabor'), sel.value);
+    document.getElementById('calc-unidades-caja').value = '';
+    document.getElementById('lote-producto-info').value = '—';
+    actualizarPreview();
+  }
+
+  function calcCambioSabor() {
+    const pId = document.getElementById('calc-proveedor').value;
+    const sId = document.getElementById('calc-sabor').value;
+    const sabor = obtenerSabor(pId, sId);
+    document.getElementById('calc-unidades-caja').value = sabor ? sabor.unidadesPorCaja : '';
+    document.getElementById('lote-producto-info').value = sabor ? sabor.nombre + ' (' + formatear(sabor.unidadesPorCaja) + ' unid./caja)' : '—';
+    actualizarPreview();
   }
 
   // ============ COMPARTIR ============
@@ -816,65 +981,81 @@
     return d.toLocaleString('es-CO', opciones);
   }
 
-  function porPalletValor() {
-    return parseFloat(document.getElementById('calc-por-pallet').value);
-  }
-
   function nombreLote(n) {
     return /^lote\b/i.test(n) ? n : 'Lote ' + n;
   }
 
   function generarResumenLote(l) {
-    const porPallet = porPalletValor();
-    const c = calcCajas(l.unidades, l.unidadesPorCaja);
-    const p = porPallet && porPallet > 0 ? calcPallets(c.cajas, porPallet) : null;
+    const calc = calcularLote(l);
     let lineas = [];
     lineas.push('📦 *CÁLCULO DE PALLETS*');
     lineas.push('🗓 ' + obtenerFecha());
     lineas.push('──────────────────');
     lineas.push('🏷️ *' + nombreLote(l.nombre).toUpperCase() + '*');
-    if (porPallet && porPallet > 0) lineas.push('   • Cajas por pallet: ' + formatear(porPallet));
     lineas.push('   • 🏭 Proveedor: ' + l.proveedorNombre.toUpperCase());
     lineas.push('   • 📦 Producto: ' + l.saborNombre.toUpperCase() + ' (' + formatear(l.unidadesPorCaja) + ' unid./caja)');
-    lineas.push('   • ' + formatear(l.unidades) + ' unidades → ' + formatear(c.cajas) + ' cajas' + (c.sobrante > 0 ? ' (+' + formatear(c.sobrante) + ' unid.)' : ''));
-    if (p) lineas.push('   • ' + p.texto.toUpperCase() + ' → ' + formatear(p.total) + ' pallets');
+    if (l.modo === 'cajas') {
+      lineas.push('   • Total: ' + formatear(calc.cajas) + ' cajas');
+    } else {
+      lineas.push('   • ' + formatear(l.unidades) + ' unidades → ' + formatear(calc.cajas) + ' cajas');
+    }
+    if (calc.sobrepasa) {
+      lineas.push('   • ⚠ LOS PALLETS SOBREPASAN LAS CAJAS.');
+    } else {
+      calc.grupos.forEach(g => {
+        if (g.cantidad > 0) {
+          lineas.push('   • 🛠 ' + g.cantidad + ' pallet' + (g.cantidad > 1 ? 's' : '') + ' de ' + formatear(g.cajasPorPallet) + ' cajas = ' + formatear(g.cajasPorPallet * g.cantidad) + ' cajas');
+        }
+      });
+      if (calc.sobrante > 0) {
+        lineas.push('   • 🛠 1 pallet de ' + formatear(calc.sobrante) + ' cajas (sobrante)');
+      }
+    }
+    lineas.push('   • TOTAL: ' + formatear(calc.totalPallets) + ' pallets');
     return lineas.join('\n');
   }
 
   function generarResumen() {
-    const porPallet = porPalletValor();
     const SEP = '──────────────────';
     let lineas = [];
     lineas.push('📦 *CÁLCULO DE PALLETS*');
     lineas.push('🗓 ' + obtenerFecha());
     lineas.push(SEP);
 
-    let totalCajas = 0, totalUnidades = 0, totalPallets = 0;
+    let totalCajas = 0, totalPallets = 0;
     lotes.forEach((l, i) => {
-      const c = calcCajas(l.unidades, l.unidadesPorCaja);
-      const p = porPallet && porPallet > 0 ? calcPallets(c.cajas, porPallet) : null;
-      totalCajas += c.cajas;
-      totalUnidades += l.unidades;
-      if (p) totalPallets += p.total;
+      const calc = calcularLote(l);
+      totalCajas += calc.cajas;
+      totalPallets += calc.totalPallets;
 
       lineas.push('🏷️ *' + nombreLote(l.nombre).toUpperCase() + '*');
-      if (porPallet && porPallet > 0) lineas.push('   • Cajas por pallet: ' + formatear(porPallet));
       lineas.push('   • 🏭 Proveedor: ' + l.proveedorNombre.toUpperCase());
       lineas.push('   • 📦 Producto: ' + l.saborNombre.toUpperCase() + ' (' + formatear(l.unidadesPorCaja) + ' unid./caja)');
-      lineas.push('   • ' + formatear(l.unidades) + ' unidades → ' + formatear(c.cajas) + ' cajas' + (c.sobrante > 0 ? ' (+' + formatear(c.sobrante) + ' unid.)' : ''));
-      if (p) lineas.push('   • ' + p.texto.toUpperCase() + ' → ' + formatear(p.total) + ' pallets');
+      if (l.modo === 'cajas') {
+        lineas.push('   • Total: ' + formatear(calc.cajas) + ' cajas');
+      } else {
+        lineas.push('   • ' + formatear(l.unidades) + ' unidades → ' + formatear(calc.cajas) + ' cajas');
+      }
+      if (calc.sobrepasa) {
+        lineas.push('   • ⚠ LOS PALLETS SOBREPASAN LAS CAJAS.');
+      } else {
+        calc.grupos.forEach(g => {
+          if (g.cantidad > 0) {
+            lineas.push('   • 🛠 ' + g.cantidad + ' pallet' + (g.cantidad > 1 ? 's' : '') + ' de ' + formatear(g.cajasPorPallet) + ' cajas = ' + formatear(g.cajasPorPallet * g.cantidad) + ' cajas');
+          }
+        });
+        if (calc.sobrante > 0) {
+          lineas.push('   • 🛠 1 pallet de ' + formatear(calc.sobrante) + ' cajas (sobrante)');
+        }
+      }
+      lineas.push('   • TOTAL: ' + formatear(calc.totalPallets) + ' pallets');
       if (i < lotes.length - 1) lineas.push(SEP);
     });
 
     lineas.push(SEP);
     lineas.push('✅ *RESUMEN*');
-    lineas.push('   • Total unidades: ' + formatear(totalUnidades));
     lineas.push('   • Total cajas: ' + formatear(totalCajas));
-    lineas.push('   • Total pallets: ' + (totalPallets > 0 ? formatear(totalPallets) : '—'));
-    if (porPallet && porPallet > 0) {
-      const tp = calcPallets(totalCajas, porPallet);
-      lineas.push('   • Desglose: ' + tp.texto.toUpperCase());
-    }
+    lineas.push('   • Total pallets: ' + formatear(totalPallets));
     return lineas.join('\n');
   }
 
