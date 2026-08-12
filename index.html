@@ -727,7 +727,7 @@
       const cajas = calcCajas(total, sabor.unidadesPorCaja);
       txt = '📦 ' + formatear(total) + ' unidades → <b>' + formatear(cajas) + ' cajas</b> (' + formatear(sabor.unidadesPorCaja) + ' unid./caja).';
     } else {
-      txt = '📦 Total: <b>' + formatear(total) + ' cajas</b>.';
+      txt = '📦 ' + formatear(total) + ' cajas → <b>' + formatear(total * sabor.unidadesPorCaja) + ' unidades</b> (' + formatear(sabor.unidadesPorCaja) + ' unid./caja).';
     }
     preview.innerHTML = txt;
     preview.style.display = 'block';
@@ -839,7 +839,7 @@
     ).join('');
 
     const cajasAuto = l.modo === 'cajas'
-      ? ''
+      ? '<span class="lote-cajas-auto">→ ' + formatear(calc.cajas * l.unidadesPorCaja) + ' unidades (' + formatear(l.unidadesPorCaja) + ' unid./caja)</span>'
       : '<span class="lote-cajas-auto">→ ' + formatear(calc.cajas) + ' cajas (' + formatear(l.unidadesPorCaja) + ' unid./caja)</span>';
 
     const btnModo = function (m, txt) {
@@ -913,7 +913,9 @@
       g.querySelector('.grupo-resultado').textContent = formatear(cant * cap) + ' cajas';
     });
     const auto = card.querySelector('.lote-cajas-auto');
-    if (auto) auto.textContent = '→ ' + formatear(calc.cajas) + ' cajas (' + formatear(l.unidadesPorCaja) + ' unid./caja)';
+    if (auto) auto.textContent = l.modo === 'cajas'
+      ? '→ ' + formatear(calc.cajas * l.unidadesPorCaja) + ' unidades (' + formatear(l.unidadesPorCaja) + ' unid./caja)'
+      : '→ ' + formatear(calc.cajas) + ' cajas (' + formatear(l.unidadesPorCaja) + ' unid./caja)';
     card.querySelector('.plan-info').innerHTML = planInfoHTML(calc);
     card.querySelector('.pallet-visual').innerHTML = visualLote(calc);
     actualizarResumen();
@@ -1010,7 +1012,7 @@
     lineas.push('   • 🏭 Proveedor: ' + l.proveedorNombre.toUpperCase());
     lineas.push('   • 📦 Producto: ' + l.saborNombre.toUpperCase() + ' (' + formatear(l.unidadesPorCaja) + ' unid./caja)');
     if (l.modo === 'cajas') {
-      lineas.push('   • Total: ' + formatear(calc.cajas) + ' cajas');
+      lineas.push('   • ' + formatear(calc.cajas) + ' cajas → ' + formatear(calc.cajas * l.unidadesPorCaja) + ' unidades');
     } else {
       lineas.push('   • ' + formatear(l.unidades) + ' unidades → ' + formatear(calc.cajas) + ' cajas');
     }
@@ -1047,7 +1049,7 @@
       lineas.push('   • 🏭 Proveedor: ' + l.proveedorNombre.toUpperCase());
       lineas.push('   • 📦 Producto: ' + l.saborNombre.toUpperCase() + ' (' + formatear(l.unidadesPorCaja) + ' unid./caja)');
       if (l.modo === 'cajas') {
-        lineas.push('   • Total: ' + formatear(calc.cajas) + ' cajas');
+        lineas.push('   • ' + formatear(calc.cajas) + ' cajas → ' + formatear(calc.cajas * l.unidadesPorCaja) + ' unidades');
       } else {
         lineas.push('   • ' + formatear(l.unidades) + ' unidades → ' + formatear(calc.cajas) + ' cajas');
       }
