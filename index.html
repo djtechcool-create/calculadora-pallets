@@ -72,14 +72,11 @@
   }
   header h1 { font-size: 1.45rem; color: var(--acento); letter-spacing: .3px; }
   header p { color: var(--muted); font-size: .88rem; margin-top: 4px; }
-  .btn-tema {
-    position: absolute;
-    right: 14px;
-    top: 14px;
+  .btn-tema, .btn-ico-circulo {
     width: 42px;
     height: 42px;
     border-radius: 50%;
-    font-size: 1.15rem;
+    font-size: 1.1rem;
     cursor: pointer;
     line-height: 1;
     display: flex;
@@ -90,7 +87,9 @@
     border: 1px solid var(--borde);
     box-shadow: 0 1px 4px var(--sombra);
   }
-  .btn-tema:hover { border-color: var(--acento); }
+  .btn-tema:hover, .btn-ico-circulo:hover { border-color: var(--acento); }
+  .btn-ico-circulo.admin-on { background: var(--acento); color: #fff; }
+  .header-botones { position: absolute; right: 14px; top: 14px; display: flex; gap: 8px; }
 
   nav {
     display: flex;
@@ -310,12 +309,15 @@
 <header>
   <h1>📦 Calculadora de Pallets</h1>
   <p>Convierte unidades en cajas y cajas en pallets</p>
-  <button id="btn-tema" class="btn-tema" onclick="alternarTema()" title="Cambiar tema">🌙</button>
+  <div class="header-botones">
+    <button id="btn-admin" class="btn-ico-circulo" onclick="pedirAdmin()" title="Modo administrador">🔒</button>
+    <button id="btn-tema" class="btn-tema" onclick="alternarTema()" title="Cambiar tema">🌙</button>
+  </div>
 </header>
 
 <nav>
   <button id="btn-tab-calc" class="activo" onclick="cambiarTab('calc')">🧮 Calculadora</button>
-  <button id="btn-tab-prov" onclick="cambiarTab('prov')">🏭 Proveedores</button>
+  <button id="btn-tab-prov" onclick="cambiarTab('prov')" style="display:none;">🏭 Proveedores</button>
 </nav>
 
 <main>
@@ -409,6 +411,19 @@
 
   <!-- ================= PROVEEDORES ================= -->
   <section id="tab-prov" class="tab">
+    <div class="card" id="admin-card" style="display:none;">
+      <h2>Administrar base compartida</h2>
+      <div class="compartir-botones">
+        <button class="btn btn-primario" onclick="exportarBase()">⬆️ Exportar base</button>
+        <label class="btn btn-gris" for="importar-input" style="text-align:center;">⬇️ Importar base</label>
+        <input type="file" id="importar-input" accept=".json,application/json" style="display:none;" onchange="importarBase(event)">
+        <button class="btn btn-gris" onclick="restaurarBase()">♻️ Restaurar base publicada</button>
+      </div>
+      <div style="font-size:.8rem; color:var(--muted); margin-top:8px;">
+        Exporta el archivo y envíalo para publicar la base. Tus compañeros la verán automáticamente al abrir la app.
+      </div>
+    </div>
+
     <div class="card">
       <h2>Agregar proveedor</h2>
       <div class="form-alta">
@@ -1086,13 +1101,106 @@
     }
   }
 
+  // ============ ADMINISTRADOR / BASE COMPARTIDA ============
+  const PASS_ADMIN = 'ADMIN2026';
+  let adminActivo = sessionStorage.getItem('adminActivo') === '1';
+
+  async function cargarBase() {
+    try {
+      const res = await fetch('./productos.json');
+      const data = await res.json();
+      if (!Array.isArray(data)) return;
+      if (data.length === 0 && cargarProveedores().length > 0) return;
+      proveedores = data;
+      localStorage.setItem('catalogoCache', JSON.stringify(data));
+      guardarProveedores();
+      aplicarUi();
+    } catch (e) {}
+  }
+
+  function pedirAdmin() {
+    if (adminActivo) {
+      adminActivo = false;
+      sessionStorage.removeItem('adminActivo');
+      if (document.getElementById('tab-prov').classList.contains('activo')) cambiarTab('calc');
+      aplicarUi();
+      cargarBase();
+      return;
+    }
+    const clave = prompt('Ingresa la clave de administrador:');
+    if (clave === PASS_ADMIN) {
+      adminActivo = true;
+      sessionStorage.setItem('adminActivo', '1');
+      aplicarUi();
+    } else {
+      alert('Clave incorrecta.');
+    }
+  }
+
+  function aplicarUi() {
+    renderProveedores();
+    renderLotes();
+    document.getElementById('sin-datos-calc').style.display = proveedores.length === 0 ? 'block' : 'none';
+    const btnProv = document.getElementById('btn-tab-prov');
+    const adminCard = document.getElementById('admin-card');
+    const btnAdmin = document.getElementById('btn-admin');
+    if (btnProv) btnProv.style.display = adminActivo ? '' : 'none';
+    if (adminCard) adminCard.style.display = adminActivo ? 'block' : 'none';
+    if (btnAdmin) {
+      btnAdmin.textContent = adminActivo ? '🔓' : '🔒';
+      btnAdmin.classList.toggle('admin-on', adminActivo);
+    }
+  }
+
+  function exportarBase() {
+    if (proveedores.length === 0) { alert('No hay proveedores para exportar.'); return; }
+    const blob = new Blob([JSON.stringify(proveedores, null, 2)], { type: 'application/json' });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = 'productos.json';
+    document.body.appendChild(a);
+    a.click();
+    document.body.removeChild(a);
+    URL.revokeObjectURL(url);
+  }
+
+  function importarBase(e) {
+    const file = e.target.files[0];
+    if (!file) return;
+    const reader = new FileReader();
+    reader.onload = function () {
+      try {
+        const data = JSON.parse(reader.result);
+        if (!Array.isArray(data)) throw new Error('formato');
+        proveedores = data;
+        guardarProveedores();
+        aplicarUi();
+        alert('✅ Base importada correctamente.');
+      } catch (err) {
+        alert('El archivo no es válido.');
+      }
+    };
+    reader.readAsText(file);
+    e.target.value = '';
+  }
+
+  function restaurarBase() {
+    if (!confirm('¿Restaurar la base publicada? Se perderán los cambios locales sin publicar.')) return;
+    cargarBase();
+  }
+
+  async function iniciar() {
+    proveedores = cargarProveedores();
+    if (adminActivo) { aplicarUi(); return; }
+    await cargarBase();
+    aplicarUi();
+  }
+
   // ============ INICIO ============
-  renderProveedores();
-  renderLotes();
-  const sinDatos = document.getElementById('sin-datos-calc');
-  if (proveedores.length === 0) sinDatos.style.display = 'block';
+  iniciar();
   document.getElementById('calc-proveedor').addEventListener('change', function () {
-    sinDatos.style.display = proveedores.length === 0 ? 'block' : 'none';
+    document.getElementById('sin-datos-calc').style.display = proveedores.length === 0 ? 'block' : 'none';
   });
 </script>
 </body>

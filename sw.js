@@ -1,4 +1,4 @@
-const CACHE = 'pallet-calc-v5';
+const CACHE = 'pallet-calc-v6';
 const ARCHIVOS = [
   './',
   './index.html',
@@ -30,7 +30,7 @@ self.addEventListener('fetch', function (e) {
   if (e.request.method !== 'GET') return;
   const req = e.request;
 
-  if (req.mode === 'navigate') {
+  if (req.mode === 'navigate' || req.url.indexOf('productos.json') !== -1) {
     e.respondWith(
       fetch(req).then(function (net) {
         const copia = net.clone();
