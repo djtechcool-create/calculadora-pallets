@@ -785,9 +785,11 @@
       : calcCajas(l.unidades || 0, l.unidadesPorCaja || 0);
     let usado = 0;
     const grupos = (l.grupos || []).map(g => {
-      const usadas = (g.cantidad || 0) * (g.cajasPorPallet || 0);
+      const cant = g.cantidad || 0;
+      const cap = g.cajasPorPallet || 0;
+      const usadas = cant * cap;
       usado += usadas;
-      return { cantidad: g.cantidad || 0, cap: g.cajasPorPallet || 0, usadas: usadas };
+      return { cantidad: cant, cap: cap, cajasPorPallet: cap, usadas: usadas };
     });
     const sobrepasa = usado > cajas;
     const sobrante = sobrepasa ? 0 : cajas - usado;
