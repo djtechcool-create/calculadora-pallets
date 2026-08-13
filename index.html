@@ -217,7 +217,7 @@
 
   .pallet-plan { margin-top: 10px; }
   .plan-titulo { font-size: .9rem; font-weight: 800; color: var(--muted); text-transform: uppercase; letter-spacing: .5px; margin-bottom: 8px; }
-  .grupo {
+  .grupo, .plan-auto {
     display: flex;
     align-items: center;
     gap: 6px;
@@ -227,8 +227,9 @@
     padding: 8px;
     margin-bottom: 8px;
   }
-  .grupo input { width: 86px; padding: 8px; text-align: center; }
-  .grupo .g-sep { font-size: .8rem; color: var(--muted); }
+  .grupo input, .plan-auto input { width: 86px; padding: 8px; text-align: center; }
+  .grupo .g-sep, .plan-auto .g-sep { font-size: .8rem; color: var(--muted); }
+  .plan-auto .inp-auto-cap { font-weight: 800; }
   .grupo-resultado { font-weight: 800; color: var(--acento); min-width: 90px; font-size: .95rem; }
   .btn-ico { background: none; border: none; cursor: pointer; font-size: 1rem; color: var(--muted); padding: 4px 6px; border-radius: 6px; }
   .btn-ico:hover { background: var(--entrada-leida); color: var(--acento); }
@@ -236,6 +237,7 @@
   .plan-info { margin-top: 10px; font-size: .95rem; }
   .plan-cajas b, .plan-total b { color: var(--acento); }
   .plan-sobrante { margin-top: 4px; }
+  .plan-auto-info { margin-top: 4px; font-weight: 600; color: var(--muted); }
   .plan-sobrepasa { color: #e53e3e; font-weight: 700; margin-top: 4px; }
   .plan-total { font-size: 1.05rem; font-weight: 800; color: var(--acento); margin-top: 6px; }
   .pallet-visual { display: flex; flex-wrap: wrap; gap: 4px; align-items: center; margin-top: 10px; }
@@ -299,7 +301,7 @@
     .grid-2, .grid-3 { grid-template-columns: 1fr; }
     main { padding: 12px; }
     input, select { font-size: 16px; }
-    .grupo input { width: 70px; }
+    .grupo input, .plan-auto input { width: 70px; }
     .btn { padding: 12px 14px; }
   }
 </style>
@@ -501,12 +503,8 @@
       let lista = JSON.parse(localStorage.getItem(STORAGE_LOTES)) || [];
       lista.forEach(function (l) {
         if (!l.modo) l.modo = 'unidades';
-        if (!l.grupos) {
-          const cajas = Math.floor((l.unidades || 0) / (l.unidadesPorCaja || 1));
-          l.grupos = cajas > 0 && cajas <= 77
-            ? [{ cantidad: 1, cajasPorPallet: cajas }]
-            : [{ cantidad: Math.max(1, Math.floor(cajas / 77)), cajasPorPallet: 77 }];
-        }
+        if (!l.grupos) l.grupos = [];
+        if (!l.cajasPorPallet) l.cajasPorPallet = 77;
       });
       return lista;
     }
@@ -760,9 +758,9 @@
       lote.cajasDirectas = total;
       cajas = total;
     }
-    lote.grupos = cajas > 0 && cajas <= 77
-      ? [{ cantidad: 1, cajasPorPallet: cajas }]
-      : [{ cantidad: Math.max(1, Math.floor(cajas / 77)), cajasPorPallet: 77 }];
+    lote.cajasPorPallet = 77;
+    lote.usarGrupos = false;
+    lote.grupos = [];
 
     lotes.push(lote);
     guardarLotes();
@@ -783,24 +781,37 @@
     const cajas = l.modo === 'cajas'
       ? (l.cajasDirectas || 0)
       : calcCajas(l.unidades || 0, l.unidadesPorCaja || 0);
-    let usado = 0;
-    const grupos = (l.grupos || []).map(g => {
-      const cant = g.cantidad || 0;
-      const cap = g.cajasPorPallet || 0;
-      const usadas = cant * cap;
-      usado += usadas;
-      return { cantidad: cant, cap: cap, cajasPorPallet: cap, usadas: usadas };
-    });
-    const sobrepasa = usado > cajas;
-    const sobrante = sobrepasa ? 0 : cajas - usado;
-    const totalPallets = grupos.reduce((s, g) => s + g.cantidad, 0) + (sobrante > 0 ? 1 : 0);
-    return { cajas: cajas, grupos: grupos, usado: usado, sobrante: sobrante, sobrepasa: sobrepasa, totalPallets: totalPallets };
+    const usarGrupos = l.usarGrupos === true || (l.usarGrupos === undefined && (l.grupos || []).length > 0);
+    let usado = 0, sobrante = 0, sobrepasa = false, plan = [];
+    if (usarGrupos) {
+      const grupos = (l.grupos || []).map(g => {
+        const cant = g.cantidad || 0;
+        const cap = g.cajasPorPallet || 0;
+        const usadas = cant * cap;
+        usado += usadas;
+        return { cantidad: cant, cap: cap, cajasPorPallet: cap, usadas: usadas };
+      });
+      sobrepasa = usado > cajas;
+      sobrante = sobrepasa ? 0 : cajas - usado;
+      plan = grupos.map(g => ({ cantidad: g.cantidad, cap: g.cap }));
+    } else {
+      const cap = Number(l.cajasPorPallet) || 0;
+      if (cap > 0) {
+        const llenos = Math.floor(cajas / cap);
+        sobrante = cajas - llenos * cap;
+        plan = [{ cantidad: llenos, cap: cap }];
+      } else {
+        sobrante = cajas;
+      }
+    }
+    const totalPallets = plan.reduce((s, g) => s + g.cantidad, 0) + (sobrante > 0 ? 1 : 0);
+    return { cajas: cajas, grupos: plan, usado: usado, sobrante: sobrante, sobrepasa: sobrepasa, totalPallets: totalPallets, plan: plan, auto: !usarGrupos };
   }
 
   function visualLote(calc) {
     const MAX = 48;
     const lista = [];
-    calc.grupos.forEach(g => { for (let i = 0; i < g.cantidad; i++) lista.push('lleno'); });
+    (calc.plan || []).forEach(g => { for (let i = 0; i < g.cantidad; i++) lista.push('lleno'); });
     if (calc.sobrante > 0 && !calc.sobrepasa) lista.push('parcial');
     let html = '';
     if (lista.length > MAX) {
@@ -817,6 +828,10 @@
     if (calc.sobrepasa) {
       h += '<div class="plan-sobrepasa">⚠ Los pallets sobrepasan las cajas totales (' + formatear(calc.usado) + ' usadas de ' + formatear(calc.cajas) + ').</div>';
     } else {
+      if (calc.auto && calc.plan.length && calc.plan[0].cantidad > 0) {
+        const g = calc.plan[0];
+        h += '<div class="plan-auto-info">🛠 ' + formatear(g.cantidad) + ' pallet' + (g.cantidad > 1 ? 's' : '') + ' de ' + formatear(g.cap) + ' cajas = ' + formatear(g.cantidad * g.cap) + ' cajas</div>';
+      }
       if (calc.sobrante > 0) {
         h += '<div class="plan-sobrante">Sobrante: <b>' + formatear(calc.sobrante) + '</b> cajas → <b>1 pallet de ' + formatear(calc.sobrante) + '</b></div>';
       } else {
@@ -829,6 +844,7 @@
 
   function loteCardHTML(l) {
     const calc = calcularLote(l);
+    const usandoGrupos = l.usarGrupos === true || (l.usarGrupos === undefined && (l.grupos || []).length > 0);
     const gruposHtml = (l.grupos || []).map((g, idx) =>
       '<div class="grupo">' +
         '<input type="number" class="inp-cant" min="0" value="' + g.cantidad + '" oninput="cambioEnLote(this,\'' + l.id + '\')">' +
@@ -867,8 +883,15 @@
         '</div>' +
         '<div class="pallet-plan">' +
           '<div class="plan-titulo">🛠 Plan de pallets</div>' +
-          '<div class="grupos">' + gruposHtml + '</div>' +
-          '<button class="btn btn-gris" onclick="agregarGrupo(\'' + l.id + '\')">➕ Agregar grupo</button>' +
+          '<div class="plan-auto" id="plan-auto-' + l.id + '"' + (usandoGrupos ? ' style="display:none"' : '') + '>' +
+            '<input type="number" class="inp-auto-cap" min="0" value="' + (l.cajasPorPallet || 77) + '" oninput="cambioEnLote(this,\'' + l.id + '\')" placeholder="77">' +
+            '<span class="g-sep">CAJAS POR PALLET</span>' +
+          '</div>' +
+          '<button class="btn btn-gris" onclick="toggleGrupos(\'' + l.id + '\')">' + (usandoGrupos ? '📦 MODO AUTOMÁTICO' : '🛠 AGREGAR GRUPOS') + '</button>' +
+          '<div class="grupos" id="grupos-' + l.id + '"' + (usandoGrupos ? '' : ' style="display:none"') + '>' +
+            gruposHtml +
+            '<button class="btn btn-gris" onclick="agregarGrupo(\'' + l.id + '\')">➕ Agregar grupo</button>' +
+          '</div>' +
           '<div class="plan-info" id="plan-info-' + l.id + '">' + planInfoHTML(calc) + '</div>' +
           '<div class="pallet-visual" id="visual-' + l.id + '">' + visualLote(calc) + '</div>' +
         '</div>' +
@@ -899,12 +922,35 @@
     const card = el.closest('.lote-card');
     if (l.modo === 'cajas') l.cajasDirectas = parseFloat(card.querySelector('.inp-total-lote').value) || 0;
     else l.unidades = parseFloat(card.querySelector('.inp-total-lote').value) || 0;
+    l.cajasPorPallet = parseFloat(card.querySelector('.inp-auto-cap').value) || 0;
     l.grupos = Array.from(card.querySelectorAll('.grupo')).map(g => ({
       cantidad: parseInt(g.querySelector('.inp-cant').value, 10) || 0,
       cajasPorPallet: parseInt(g.querySelector('.inp-cap').value, 10) || 0
     }));
     guardarLotes();
     actualizarResultados(l, card);
+  }
+
+  function toggleGrupos(lId) {
+    const l = lotes.find(x => x.id === lId);
+    if (!l) return;
+    if (!l.usarGrupos) {
+      const cap = Number(l.cajasPorPallet) || 77;
+      const cajas = l.modo === 'cajas'
+        ? (l.cajasDirectas || 0)
+        : calcCajas(l.unidades || 0, l.unidadesPorCaja || 0);
+      const llenos = cap > 0 ? Math.floor(cajas / cap) : 0;
+      const sob = cajas - llenos * cap;
+      l.grupos = [];
+      if (llenos > 0) l.grupos.push({ cantidad: llenos, cajasPorPallet: cap });
+      if (sob > 0) l.grupos.push({ cantidad: 1, cajasPorPallet: sob });
+      if (l.grupos.length === 0) l.grupos.push({ cantidad: 1, cajasPorPallet: cap });
+      l.usarGrupos = true;
+    } else {
+      l.usarGrupos = false;
+    }
+    guardarLotes();
+    renderLotes();
   }
 
   function actualizarResultados(l, card) {
@@ -934,7 +980,7 @@
   function agregarGrupo(lId) {
     const l = lotes.find(x => x.id === lId);
     if (!l) return;
-    l.grupos.push({ cantidad: 1, cajasPorPallet: 77 });
+    l.grupos.push({ cantidad: 1, cajasPorPallet: l.cajasPorPallet || 77 });
     guardarLotes();
     renderLotes();
   }
@@ -1021,9 +1067,9 @@
     if (calc.sobrepasa) {
       lineas.push('   • ⚠ LOS PALLETS SOBREPASAN LAS CAJAS.');
     } else {
-      calc.grupos.forEach(g => {
+      (calc.plan || []).forEach(g => {
         if (g.cantidad > 0) {
-          lineas.push('   • 🛠 ' + g.cantidad + ' pallet' + (g.cantidad > 1 ? 's' : '') + ' de ' + formatear(g.cajasPorPallet) + ' cajas = ' + formatear(g.cajasPorPallet * g.cantidad) + ' cajas');
+          lineas.push('   • 🛠 ' + g.cantidad + ' pallet' + (g.cantidad > 1 ? 's' : '') + ' de ' + formatear(g.cap) + ' cajas = ' + formatear(g.cap * g.cantidad) + ' cajas');
         }
       });
       if (calc.sobrante > 0) {
@@ -1058,9 +1104,9 @@
       if (calc.sobrepasa) {
         lineas.push('   • ⚠ LOS PALLETS SOBREPASAN LAS CAJAS.');
       } else {
-        calc.grupos.forEach(g => {
+        (calc.plan || []).forEach(g => {
           if (g.cantidad > 0) {
-            lineas.push('   • 🛠 ' + g.cantidad + ' pallet' + (g.cantidad > 1 ? 's' : '') + ' de ' + formatear(g.cajasPorPallet) + ' cajas = ' + formatear(g.cajasPorPallet * g.cantidad) + ' cajas');
+            lineas.push('   • 🛠 ' + g.cantidad + ' pallet' + (g.cantidad > 1 ? 's' : '') + ' de ' + formatear(g.cap) + ' cajas = ' + formatear(g.cap * g.cantidad) + ' cajas');
           }
         });
         if (calc.sobrante > 0) {
