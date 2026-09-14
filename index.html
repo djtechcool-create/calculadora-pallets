@@ -5,13 +5,13 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
 <title>Calculadora de Pallets</title>
 <meta name="description" content="Convierte unidades en cajas y cajas en pallets. Calculadora de pallets por lotes para bodega y logística.">
-<meta name="theme-color" content="#000000">
-<link rel="manifest" href="manifest.webmanifest?v=10">
+<meta name="theme-color" content="#f5f5f5">
+<link rel="manifest" href="manifest.webmanifest?v=11">
 <link rel="icon" href="icon-192.png" type="image/png">
 <link rel="apple-touch-icon" href="icon-180.png">
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="mobile-web-app-capable" content="yes">
-<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-status-bar-style" content="default">
 <meta name="apple-mobile-web-app-title" content="Pallets">
 <script>
   (function () {
@@ -30,9 +30,9 @@
     --borde: #e2e8f0;
     --entrada-bg: #ffffff;
     --entrada-leida: #f1f5f9;
-    --acento: #0f766e;
-    --acento-suave: #f0fdfa;
-    --acento-borde: #99f6e4;
+    --acento: #000000;
+    --acento-suave: #e8e8e8;
+    --acento-borde: #d0d0d0;
     --btn-gris-bg: #e2e8f0;
     --btn-gris-txt: #334155;
     --nav-bg: #ffffff;
@@ -47,15 +47,17 @@
     --borde: #232323;
     --entrada-bg: #000000;
     --entrada-leida: #161616;
-    --acento: #2dd4bf;
-    --acento-suave: #07131a;
-    --acento-borde: #1c5b5f;
+    --acento: #d9b25c;
+    --acento-suave: #2e2405;
+    --acento-borde: #6b5518;
     --btn-gris-bg: #1f1f1f;
     --btn-gris-txt: #e8e8e8;
     --nav-bg: #0a0a0a;
     --sombra: rgba(0,0,0,.6);
     --nav-borde: #1f1f1f;
   }
+  html { background: #f5f5f5; }
+  html[data-tema="oscuro"] { background: #000000; }
   body {
     font-family: "Segoe UI", Roboto, Arial, sans-serif;
     background: var(--bg);
@@ -153,7 +155,7 @@
     text-transform: uppercase;
     transition: border-color .15s, box-shadow .15s;
   }
-  input:focus, select:focus { border-color: var(--acento); box-shadow: 0 0 0 3px rgba(20,184,166,.18); }
+  input:focus, select:focus { border-color: var(--acento); box-shadow: 0 0 0 3px rgba(184,134,11,.18); }
   input:read-only { background: var(--entrada-leida); font-weight: 700; color: var(--acento); }
 
   .btn {
