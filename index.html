@@ -5,8 +5,8 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
 <title>Calculadora de Pallets</title>
 <meta name="description" content="Convierte unidades en cajas y cajas en pallets. Calculadora de pallets por lotes para bodega y logística.">
-<meta name="theme-color" content="#f0f4f8">
-<link rel="manifest" href="manifest.webmanifest">
+<meta name="theme-color" content="#000000">
+<link rel="manifest" href="manifest.webmanifest?v=10">
 <link rel="icon" href="icon-192.png" type="image/png">
 <link rel="apple-touch-icon" href="icon-180.png">
 <meta name="apple-mobile-web-app-capable" content="yes">
@@ -435,6 +435,11 @@
   .pbox.parcial { background: linear-gradient(135deg, #d9b25c, #9b741e); }
   .grupos { margin-top: 12px; }
   .grupo { border: 1px dashed var(--acento-borde); background: var(--entrada-leida); border-radius: 11px; }
+  .resto-auto { display: flex; align-items: center; justify-content: space-between; gap: 14px; margin: 10px 0; padding: 12px; border: 1px solid var(--acento-borde); border-radius: 11px; background: var(--acento-suave); }
+  .resto-auto b { display: block; font-size: .82rem; color: var(--texto); }
+  .resto-auto span { display: block; max-width: 330px; margin-top: 3px; color: var(--muted); font-size: .72rem; line-height: 1.3; }
+  .resto-auto .cap-input { width: min(180px, 100%); flex-shrink: 0; }
+  .resto-auto .cap-input input { min-height: 42px; padding: 8px; text-align: center; font-size: 1rem; }
   .total-general { background: linear-gradient(125deg, var(--acento-suave), var(--card) 58%, rgba(184,134,11,.10)); border-color: var(--acento-borde); }
   .total-general .grande { color: var(--acento); }
   .pie { padding-top: 6px; }
@@ -450,6 +455,8 @@
     .lote-card { padding: 0; }
     .lote-header, .lote-entrada, .pallet-plan { padding-left: 15px; padding-right: 15px; }
     .plan-auto { grid-template-columns: 1fr; }
+    .resto-auto { align-items: stretch; flex-direction: column; }
+    .resto-auto .cap-input { width: 100%; }
   }
 </style>
 </head>
@@ -951,6 +958,7 @@
     lote.cajasPorPallet = 0;
     lote.usarGrupos = false;
     lote.grupos = [];
+    lote.restoCajasPorPallet = 0;
 
     lotes.push(lote);
     guardarLotes();
@@ -983,13 +991,23 @@
       });
       sobrepasa = usado > cajas;
       sobrante = sobrepasa ? 0 : cajas - usado;
-      plan = grupos.map(g => ({ cantidad: g.cantidad, cap: g.cap }));
+      plan = grupos.map(g => ({ cantidad: g.cantidad, cap: g.cap, automatico: false }));
+      const capResto = Number(l.restoCajasPorPallet) || 0;
+      if (!sobrepasa && capResto > 0) {
+        const cantidadAutomatica = Math.floor(sobrante / capResto);
+        if (cantidadAutomatica > 0) {
+          const usadasAutomaticas = cantidadAutomatica * capResto;
+          plan.push({ cantidad: cantidadAutomatica, cap: capResto, automatico: true });
+          usado += usadasAutomaticas;
+          sobrante -= usadasAutomaticas;
+        }
+      }
     } else {
       const cap = Number(l.cajasPorPallet) || 0;
       if (cap > 0) {
         const llenos = Math.floor(cajas / cap);
         sobrante = cajas - llenos * cap;
-        plan = [{ cantidad: llenos, cap: cap }];
+        plan = [{ cantidad: llenos, cap: cap, automatico: true }];
       } else {
         sinCapacidad = true;
       }
@@ -1020,10 +1038,11 @@
     } else if (calc.sobrepasa) {
       h += '<div class="plan-sobrepasa">⚠ Los pallets sobrepasan las cajas totales (' + formatear(calc.usado) + ' usadas de ' + formatear(calc.cajas) + ').</div>';
     } else {
-      if (calc.auto && calc.plan.length && calc.plan[0].cantidad > 0) {
-        const g = calc.plan[0];
-        h += '<div class="plan-auto-info">' + formatear(g.cantidad) + ' pallet' + (g.cantidad > 1 ? 's' : '') + ' completo' + (g.cantidad > 1 ? 's' : '') + ' × ' + formatear(g.cap) + ' cajas = ' + formatear(g.cantidad * g.cap) + ' cajas</div>';
-      }
+      (calc.plan || []).forEach(function (g) {
+        if (g.cantidad <= 0) return;
+        const etiqueta = g.automatico && !calc.auto ? 'Resto automático: ' : '';
+        h += '<div class="plan-auto-info">' + etiqueta + formatear(g.cantidad) + ' pallet' + (g.cantidad > 1 ? 's' : '') + ' completo' + (g.cantidad > 1 ? 's' : '') + ' × ' + formatear(g.cap) + ' cajas = ' + formatear(g.cantidad * g.cap) + ' cajas</div>';
+      });
       if (calc.sobrante > 0) {
         h += '<div class="plan-sobrante">Pallet parcial: <b>1 × ' + formatear(calc.sobrante) + ' cajas</b></div>';
       } else {
@@ -1088,6 +1107,10 @@
           '<button class="btn btn-gris" style="margin-top:12px;" onclick="toggleGrupos(\'' + l.id + '\')">' + (usandoGrupos ? '↩ Volver al cálculo automático' : '⚙ Ajustar distribución manual') + '</button>' +
           '<div class="grupos" id="grupos-' + l.id + '"' + (usandoGrupos ? '' : ' style="display:none"') + '>' +
             gruposHtml +
+            '<div class="resto-auto">' +
+              '<div><b>Completar el resto automáticamente</b><span>La app calcula cuántos pallets completos salen del saldo.</span></div>' +
+              '<div class="cap-input"><input type="number" class="inp-resto-cap" min="0" value="' + (l.restoCajasPorPallet ?? 0) + '" oninput="cambioEnLote(this,\'' + l.id + '\')" placeholder="Ej: 117"><b>CAJAS</b></div>' +
+            '</div>' +
             '<button class="btn btn-gris" onclick="agregarGrupo(\'' + l.id + '\')">➕ Agregar otro grupo</button>' +
           '</div>' +
           '<div class="plan-info manual-plan-info"' + (usandoGrupos ? '' : ' style="display:none"') + '>' + planInfoHTML(calc) + '</div>' +
@@ -1125,6 +1148,8 @@
       cantidad: parseInt(g.querySelector('.inp-cant').value, 10) || 0,
       cajasPorPallet: parseInt(g.querySelector('.inp-cap').value, 10) || 0
     }));
+    const campoResto = card.querySelector('.inp-resto-cap');
+    l.restoCajasPorPallet = campoResto ? (parseInt(campoResto.value, 10) || 0) : 0;
     guardarLotes();
     actualizarResultados(l, card);
   }

@@ -1,8 +1,8 @@
-const CACHE = 'pallet-calc-v9';
+const CACHE = 'pallet-calc-v10';
 const ARCHIVOS = [
   './',
   './index.html',
-  './manifest.webmanifest',
+  './manifest.webmanifest?v=10',
   './icon-180.png',
   './icon-192.png',
   './icon-512.png'
