@@ -1,8 +1,8 @@
-const CACHE = 'pallet-calc-v11';
+const CACHE = 'pallet-calc-v12';
 const ARCHIVOS = [
   './',
   './index.html',
-  './manifest.webmanifest?v=11',
+  './manifest.webmanifest?v=12',
   './icon-180.png',
   './icon-192.png',
   './icon-512.png'
@@ -31,8 +31,9 @@ self.addEventListener('fetch', function (e) {
   const req = e.request;
 
   if (req.mode === 'navigate' || req.url.indexOf('index.html') !== -1 || req.url.indexOf('productos.json') !== -1) {
+    const sinCache = new Request(req, { cache: 'no-store' });
     e.respondWith(
-      fetch(req).then(function (net) {
+      fetch(sinCache).then(function (net) {
         const copia = net.clone();
         caches.open(CACHE).then(function (cache) { cache.put(req, copia); });
         return net;

@@ -6,7 +6,7 @@
 <title>Calculadora de Pallets</title>
 <meta name="description" content="Convierte unidades en cajas y cajas en pallets. Calculadora de pallets por lotes para bodega y logística.">
 <meta name="theme-color" content="#f5f5f5">
-<link rel="manifest" href="manifest.webmanifest?v=11">
+<link rel="manifest" href="manifest.webmanifest?v=12">
 <link rel="icon" href="icon-192.png" type="image/png">
 <link rel="apple-touch-icon" href="icon-180.png">
 <meta name="apple-mobile-web-app-capable" content="yes">
@@ -623,7 +623,7 @@
     const btn = document.getElementById('btn-tema');
     if (btn) btn.textContent = t === 'oscuro' ? '☀️' : '🌙';
     const meta = document.querySelector('meta[name="theme-color"]');
-    if (meta) meta.setAttribute('content', t === 'oscuro' ? '#000000' : '#f0f4f8');
+    if (meta) meta.setAttribute('content', t === 'oscuro' ? '#000000' : '#f5f5f5');
   }
   function alternarTema() {
     const actual = document.documentElement.getAttribute('data-tema');
