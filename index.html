@@ -304,13 +304,161 @@
     .grupo input, .plan-auto input { width: 70px; }
     .btn { padding: 12px 14px; }
   }
+
+  /* ---------- NUEVA INTERFAZ: OPERACIÓN DE ESTIBA ---------- */
+  :root {
+    --bg: #f5f5f5;
+    --card: #ffffff;
+    --texto: #111111;
+    --muted: #666666;
+    --borde: #d0d0d0;
+    --entrada-bg: #ffffff;
+    --entrada-leida: #f0f0f0;
+    --acento: #000000;
+    --acento-suave: #e8e8e8;
+    --acento-borde: #d0d0d0;
+    --btn-gris-bg: #e8e8e8;
+    --btn-gris-txt: #111111;
+    --nav-bg: #ffffff;
+    --nav-borde: #d0d0d0;
+    --sombra: rgba(0,0,0,.06);
+    --cyan: #b8860b;
+    --violeta: #333333;
+    --warning: #ed921d;
+  }
+  html[data-tema="oscuro"] {
+    --bg: #000000;
+    --card: #121212;
+    --texto: #f2f2f2;
+    --muted: #8f8f8f;
+    --borde: #242424;
+    --entrada-bg: #0a0a0a;
+    --entrada-leida: #141414;
+    --acento: #d9b25c;
+    --acento-suave: #2e2405;
+    --acento-borde: #6b5518;
+    --btn-gris-bg: #1c1c1c;
+    --btn-gris-txt: #e5e5e5;
+    --nav-bg: #0a0a0a;
+    --nav-borde: #242424;
+    --sombra: rgba(0,0,0,.3);
+    --cyan: #d9b25c;
+    --violeta: #6b5518;
+    --warning: #d9b25c;
+  }
+  body {
+    background: var(--bg);
+    letter-spacing: .01em;
+  }
+  header {
+    max-width: 1050px;
+    margin: 0 auto;
+    padding: 32px 78px 18px 20px;
+    text-align: left;
+  }
+  .hero-kicker { color: var(--cyan); font-size: .7rem; font-weight: 800; letter-spacing: .16em; }
+  header h1 { color: var(--texto); font-size: clamp(1.7rem, 4vw, 2.25rem); margin-top: 5px; letter-spacing: -.045em; }
+  header h1 span { color: var(--acento); }
+  header p { max-width: 550px; color: var(--muted); font-size: .94rem; margin-top: 7px; line-height: 1.45; }
+  .header-botones { right: 20px; top: 24px; }
+  .btn-tema, .btn-ico-circulo { background: var(--card); border-color: var(--borde); box-shadow: none; }
+  nav {
+    max-width: 1018px;
+    margin: 0 auto 4px;
+    padding: 5px;
+    gap: 5px;
+    border: 1px solid var(--nav-borde);
+    border-radius: 14px;
+    backdrop-filter: none;
+    box-shadow: none;
+    position: sticky;
+    top: 8px;
+  }
+  nav button { border: 0; border-radius: 10px; min-width: 0; padding: 11px 12px; font-size: .82rem; letter-spacing: .04em; }
+  nav button.activo { color: #fff; border: 0; background: linear-gradient(115deg, var(--acento), var(--violeta)); box-shadow: none; }
+  html[data-tema="oscuro"] nav button.activo { color: #111; }
+  main { max-width: 1050px; padding: 22px 20px; }
+  .workspace-intro { display: flex; justify-content: space-between; gap: 20px; align-items: end; margin: 0 0 17px; }
+  .workspace-intro h2 { font-size: 1.3rem; letter-spacing: -.03em; }
+  .workspace-intro p { color: var(--muted); max-width: 600px; line-height: 1.45; margin-top: 5px; font-size: .92rem; }
+  .mini-legend { color: var(--cyan); font-weight: 800; font-size: .73rem; letter-spacing: .11em; white-space: nowrap; }
+  .card { border-color: var(--borde); border-radius: 20px; box-shadow: none; padding: 21px; margin-bottom: 15px; backdrop-filter: none; }
+  .card h2 { color: var(--texto); border: 0; padding: 0; margin-bottom: 16px; font-size: 1.08rem; }
+  .step-heading { display: flex; align-items: center; gap: 10px; }
+  .step-heading .step-number { display: grid; place-items: center; width: 27px; height: 27px; color: #fff; background: var(--acento); border-radius: 9px; font-size: .78rem; letter-spacing: 0; }
+  html[data-tema="oscuro"] .step-heading .step-number { color: #111; }
+  .step-heading small { color: var(--muted); font-size: .78rem; font-weight: 500; }
+  .config-card { border-top: 3px solid var(--cyan); }
+  .entry-card { border-top: 3px solid var(--violeta); }
+  .grid-2 { gap: 15px; }
+  label { color: var(--muted); font-size: .76rem; letter-spacing: .05em; text-transform: uppercase; }
+  input, select { border-radius: 11px; border-color: var(--borde); min-height: 47px; }
+  input:focus, select:focus { box-shadow: 0 0 0 4px rgba(49,87,246,.14); }
+  input:read-only { color: var(--acento); }
+  .field-hint { display: block; color: var(--muted); font-size: .75rem; margin-top: 6px; line-height: 1.3; }
+  .seg { border-radius: 11px; padding: 4px; gap: 4px; background: var(--entrada-leida); border-color: transparent; }
+  .seg button { border-radius: 8px; font-size: .8rem; letter-spacing: .04em; }
+  .seg button.activo { background: var(--card); color: var(--acento); box-shadow: 0 3px 10px var(--sombra); }
+  .btn { border-radius: 11px; min-height: 43px; font-size: .84rem; letter-spacing: .025em; }
+  .btn-primario { background: linear-gradient(115deg, var(--acento), var(--violeta)); box-shadow: none; }
+  html[data-tema="oscuro"] .btn-primario { color: #111; }
+  .btn-peligro { background: #dc4b5f; }
+  .aviso { border-radius: 12px; }
+  .lote-card { padding: 0; overflow: hidden; border-left: 3px solid var(--cyan); }
+  .lote-header { padding: 19px 20px 13px; margin: 0; background: linear-gradient(95deg, var(--acento-suave), transparent); }
+  .lote-header h3 { font-size: 1.13rem; color: var(--texto); }
+  .lote-sub { line-height: 1.45; }
+  .lote-entrada { margin: 0; padding: 15px 20px; border-radius: 0; background: transparent; border-bottom: 1px solid var(--borde); }
+  .input-caption { display: flex; justify-content: space-between; align-items: baseline; gap: 8px; margin-bottom: 8px; }
+  .input-caption span { font-size: .76rem; color: var(--muted); }
+  .pallet-plan { padding: 17px 20px 20px; margin: 0; }
+  .plan-titulo { color: var(--texto); font-size: .96rem; letter-spacing: .03em; text-transform: none; margin-bottom: 4px; }
+  .plan-description { color: var(--muted); font-size: .79rem; margin-bottom: 12px; line-height: 1.4; }
+  .plan-auto { display: grid; grid-template-columns: minmax(180px, 260px) 1fr; align-items: stretch; gap: 14px; background: transparent; padding: 0; }
+  .plan-field { padding: 12px; border: 1px solid var(--acento-borde); background: var(--acento-suave); border-radius: 12px; }
+  .plan-field label { margin-bottom: 7px; }
+  .cap-input { display: flex; align-items: center; gap: 8px; }
+  .plan-auto .cap-input input { width: 100%; padding: 9px 10px; font-size: 1.15rem; background: var(--card); }
+  .cap-input b { color: var(--muted); font-size: .78rem; white-space: nowrap; }
+  .plan-field small { color: var(--muted); display: block; font-size: .7rem; margin-top: 7px; }
+  .plan-info { margin: 0; padding: 13px 15px; background: var(--entrada-leida); border-radius: 12px; align-content: center; }
+  .manual-plan-info { margin-top: 12px; }
+  .plan-cajas { color: var(--muted); font-size: .81rem; }
+  .plan-cajas b, .plan-total b { color: var(--acento); }
+  .plan-auto-info { color: var(--texto); font-size: .93rem; margin-top: 5px; }
+  .plan-sobrante { font-size: .84rem; }
+  .plan-total { font-size: 1.13rem; margin-top: 8px; }
+  .plan-pending { color: var(--muted); font-size: .86rem; font-weight: 600; }
+  .pallet-visual { padding-top: 2px; }
+  .pbox { width: 19px; height: 19px; border-radius: 6px; box-shadow: inset 0 -3px rgba(0,0,0,.14); }
+  .pbox.lleno { background: linear-gradient(135deg, var(--acento), var(--violeta)); }
+  .pbox.parcial { background: linear-gradient(135deg, #d9b25c, #9b741e); }
+  .grupos { margin-top: 12px; }
+  .grupo { border: 1px dashed var(--acento-borde); background: var(--entrada-leida); border-radius: 11px; }
+  .total-general { background: linear-gradient(125deg, var(--acento-suave), var(--card) 58%, rgba(0,184,198,.1)); border-color: var(--acento-borde); }
+  .total-general .grande { color: var(--acento); }
+  .pie { padding-top: 6px; }
+  @media (max-width: 640px) {
+    header { padding: 25px 68px 15px 16px; }
+    .header-botones { right: 14px; top: 18px; gap: 5px; }
+    .btn-tema, .btn-ico-circulo { width: 37px; height: 37px; }
+    main { padding: 16px 12px; }
+    nav { margin: 0 12px; top: 5px; }
+    .workspace-intro { display: block; margin-bottom: 14px; }
+    .mini-legend { display: block; margin-top: 9px; }
+    .card { padding: 16px; border-radius: 15px; }
+    .lote-card { padding: 0; }
+    .lote-header, .lote-entrada, .pallet-plan { padding-left: 15px; padding-right: 15px; }
+    .plan-auto { grid-template-columns: 1fr; }
+  }
 </style>
 </head>
 <body>
 
 <header>
-  <h1>📦 Calculadora de Pallets</h1>
-  <p>Convierte unidades en cajas y cajas en pallets</p>
+  <div class="hero-kicker">OPERACIÓN DE BODEGA</div>
+  <h1>Calculadora de <span>Pallets</span></h1>
+  <p>Convierte unidades o cajas en un plan de pallets claro, listo para trabajar en piso.</p>
   <div class="header-botones">
     <button id="btn-admin" class="btn-ico-circulo" onclick="pedirAdmin()" title="Modo administrador">🔒</button>
     <button id="btn-tema" class="btn-tema" onclick="alternarTema()" title="Cambiar tema">🌙</button>
@@ -318,15 +466,23 @@
 </header>
 
 <nav>
-  <button id="btn-tab-calc" class="activo" onclick="cambiarTab('calc')">🧮 Calculadora</button>
+  <button id="btn-tab-calc" class="activo" onclick="cambiarTab('calc')">▦ CALCULAR ESTIBA</button>
   <button id="btn-tab-prov" onclick="cambiarTab('prov')" style="display:none;">🏭 Proveedores</button>
 </nav>
 
 <main>
   <!-- ================= CALCULADORA ================= -->
   <section id="tab-calc" class="tab activo">
-    <div class="card">
-      <h2>Configuración</h2>
+    <div class="workspace-intro">
+      <div>
+        <h2>¿Qué producto vas a estibar?</h2>
+        <p>Elige el proveedor y la presentación. Después escribe lo que llegó y define cuántas cajas caben por pallet.</p>
+      </div>
+      <span class="mini-legend">UNIDADES → CAJAS → PALLETS</span>
+    </div>
+
+    <div class="card config-card">
+      <h2 class="step-heading"><span class="step-number">01</span> Identifica el producto <small>la presentación se llena sola</small></h2>
 
       <div id="sin-datos-calc" class="aviso" style="display:none;">
         Aún no tienes proveedores. Ve a la pestaña <b>Proveedores</b> para agregar tus productos con sus unidades por caja.
@@ -349,15 +505,16 @@
 
       <div class="grid-2" style="margin-top:12px;">
         <div>
-          <label for="calc-unidades-caja">Unidades por caja (auto)</label>
+          <label for="calc-unidades-caja">Presentación</label>
           <input type="number" id="calc-unidades-caja" value="0" readonly>
+          <span class="field-hint">Unidades que contiene cada caja de este producto.</span>
         </div>
         <div></div>
       </div>
     </div>
 
-    <div class="card">
-      <h2>Agregar lote</h2>
+    <div class="card entry-card">
+      <h2 class="step-heading"><span class="step-number">02</span> Registra lo que llegó <small>puede venir en unidades o en cajas</small></h2>
       <div class="grid-2">
         <div>
           <label for="lote-nombre">Nombre del lote</label>
@@ -368,8 +525,8 @@
           <input type="text" id="lote-producto-info" value="—" readonly>
         </div>
       </div>
-      <div style="margin-top:12px;">
-        <label>El total del lote viene en:</label>
+      <div style="margin-top:14px;">
+        <label>La guía indica el total en:</label>
         <div class="seg">
           <button id="modo-alta-unidades" class="activo" onclick="setModoAlta('unidades')">📦 UNIDADES</button>
           <button id="modo-alta-cajas" onclick="setModoAlta('cajas')">📦 CAJAS</button>
@@ -381,7 +538,7 @@
           <input type="number" id="lote-total" min="0" placeholder="Ej: 30600" oninput="actualizarPreview()" onkeydown="if(event.key==='Enter')agregarLote()">
         </div>
         <div style="display:flex; align-items:flex-end;">
-          <button class="btn btn-primario" onclick="agregarLote()">➕ Agregar lote</button>
+          <button class="btn btn-primario" onclick="agregarLote()">Crear plan de estiba →</button>
         </div>
       </div>
       <div id="lote-preview" class="aviso" style="display:none; margin-top:10px;"></div>
@@ -390,11 +547,11 @@
     <div id="lista-lotes"></div>
 
     <div id="sin-lotes" class="card" style="text-align:center; color:var(--muted);">
-      Aún no hay lotes. Agrega el primero arriba. ⬆️
+      Aún no hay planes. Registra el primer producto arriba. ⬆️
     </div>
 
     <div class="card total-general" id="total-general" style="display:none;">
-      <h2>Resumen del lote completo</h2>
+      <h2>Resumen de la operación</h2>
       <div class="linea">📦 <b>Cajas totales:</b> <span class="grande" id="total-cajas">0</span></div>
       <div class="linea">🛠 <b>Total de pallets:</b> <span class="grande" id="total-pallets">0</span></div>
       <div class="detalle" id="total-detalle"></div>
@@ -478,8 +635,16 @@
 
   // ============ PWA ============
   if ('serviceWorker' in navigator) {
+    let pwaActualizada = false;
+    navigator.serviceWorker.addEventListener('controllerchange', function () {
+      if (pwaActualizada) return;
+      pwaActualizada = true;
+      window.location.reload();
+    });
     window.addEventListener('load', function () {
-      navigator.serviceWorker.register('./sw.js').catch(function () {});
+      navigator.serviceWorker.register('./sw.js')
+        .then(function (registro) { return registro.update(); })
+        .catch(function () {});
     });
   }
 
@@ -498,13 +663,38 @@
   function guardarProveedores() {
     localStorage.setItem(STORAGE_KEY, JSON.stringify(proveedores));
   }
+  function claveBase(valor) {
+    return String(valor || '').trim().toLocaleUpperCase('es').replace(/\s+/g, ' ');
+  }
+  function fusionarBase(publicada, local) {
+    const resultado = Array.isArray(local) ? local.map(function (p) {
+      return Object.assign({}, p, { sabores: Array.isArray(p.sabores) ? p.sabores.slice() : [] });
+    }) : [];
+    (Array.isArray(publicada) ? publicada : []).forEach(function (provPublicado) {
+      let provLocal = resultado.find(function (p) {
+        return p.id === provPublicado.id || claveBase(p.nombre) === claveBase(provPublicado.nombre);
+      });
+      if (!provLocal) {
+        resultado.push(Object.assign({}, provPublicado, { sabores: Array.isArray(provPublicado.sabores) ? provPublicado.sabores.slice() : [] }));
+        return;
+      }
+      (provPublicado.sabores || []).forEach(function (saborPublicado) {
+        const existe = (provLocal.sabores || []).some(function (saborLocal) {
+          return saborLocal.id === saborPublicado.id || claveBase(saborLocal.nombre) === claveBase(saborPublicado.nombre);
+        });
+        if (!existe) provLocal.sabores.push(Object.assign({}, saborPublicado));
+      });
+    });
+    return resultado;
+  }
   function cargarLotes() {
     try {
       let lista = JSON.parse(localStorage.getItem(STORAGE_LOTES)) || [];
       lista.forEach(function (l) {
         if (!l.modo) l.modo = 'unidades';
         if (!l.grupos) l.grupos = [];
-        if (!l.cajasPorPallet) l.cajasPorPallet = 77;
+        // Los planes que ya existen conservan su capacidad; los nuevos empiezan en cero.
+        if (l.cajasPorPallet === undefined || l.cajasPorPallet === null) l.cajasPorPallet = 0;
       });
       return lista;
     }
@@ -758,7 +948,7 @@
       lote.cajasDirectas = total;
       cajas = total;
     }
-    lote.cajasPorPallet = 77;
+    lote.cajasPorPallet = 0;
     lote.usarGrupos = false;
     lote.grupos = [];
 
@@ -782,7 +972,7 @@
       ? (l.cajasDirectas || 0)
       : calcCajas(l.unidades || 0, l.unidadesPorCaja || 0);
     const usarGrupos = l.usarGrupos === true || (l.usarGrupos === undefined && (l.grupos || []).length > 0);
-    let usado = 0, sobrante = 0, sobrepasa = false, plan = [];
+    let usado = 0, sobrante = 0, sobrepasa = false, plan = [], sinCapacidad = false;
     if (usarGrupos) {
       const grupos = (l.grupos || []).map(g => {
         const cant = g.cantidad || 0;
@@ -801,11 +991,11 @@
         sobrante = cajas - llenos * cap;
         plan = [{ cantidad: llenos, cap: cap }];
       } else {
-        sobrante = cajas;
+        sinCapacidad = true;
       }
     }
-    const totalPallets = plan.reduce((s, g) => s + g.cantidad, 0) + (sobrante > 0 ? 1 : 0);
-    return { cajas: cajas, grupos: plan, usado: usado, sobrante: sobrante, sobrepasa: sobrepasa, totalPallets: totalPallets, plan: plan, auto: !usarGrupos };
+    const totalPallets = sinCapacidad ? 0 : plan.reduce((s, g) => s + g.cantidad, 0) + (sobrante > 0 ? 1 : 0);
+    return { cajas: cajas, grupos: plan, usado: usado, sobrante: sobrante, sobrepasa: sobrepasa, totalPallets: totalPallets, plan: plan, auto: !usarGrupos, sinCapacidad: sinCapacidad };
   }
 
   function visualLote(calc) {
@@ -825,20 +1015,22 @@
 
   function planInfoHTML(calc) {
     let h = '<div class="plan-cajas"><b>' + formatear(calc.cajas) + '</b> cajas en total</div>';
-    if (calc.sobrepasa) {
+    if (calc.sinCapacidad) {
+      h += '<div class="plan-pending">Escribe la capacidad por pallet para ver el plan.</div>';
+    } else if (calc.sobrepasa) {
       h += '<div class="plan-sobrepasa">⚠ Los pallets sobrepasan las cajas totales (' + formatear(calc.usado) + ' usadas de ' + formatear(calc.cajas) + ').</div>';
     } else {
       if (calc.auto && calc.plan.length && calc.plan[0].cantidad > 0) {
         const g = calc.plan[0];
-        h += '<div class="plan-auto-info">🛠 ' + formatear(g.cantidad) + ' pallet' + (g.cantidad > 1 ? 's' : '') + ' de ' + formatear(g.cap) + ' cajas = ' + formatear(g.cantidad * g.cap) + ' cajas</div>';
+        h += '<div class="plan-auto-info">' + formatear(g.cantidad) + ' pallet' + (g.cantidad > 1 ? 's' : '') + ' completo' + (g.cantidad > 1 ? 's' : '') + ' × ' + formatear(g.cap) + ' cajas = ' + formatear(g.cantidad * g.cap) + ' cajas</div>';
       }
       if (calc.sobrante > 0) {
-        h += '<div class="plan-sobrante">Sobrante: <b>' + formatear(calc.sobrante) + '</b> cajas → <b>1 pallet de ' + formatear(calc.sobrante) + '</b></div>';
+        h += '<div class="plan-sobrante">Pallet parcial: <b>1 × ' + formatear(calc.sobrante) + ' cajas</b></div>';
       } else {
         h += '<div class="plan-sobrante">Sin sobrante: todos los pallets quedan completos.</div>';
       }
     }
-    h += '<div class="plan-total">Total: <b>' + formatear(calc.totalPallets) + '</b> pallets</div>';
+    if (!calc.sinCapacidad) h += '<div class="plan-total">Total a estibar: <b>' + formatear(calc.totalPallets) + '</b> pallets</div>';
     return h;
   }
 
@@ -878,21 +1070,27 @@
         '</div>' +
         '<div class="lote-entrada">' +
           '<div class="seg">' + btnModo('unidades', '📦 UNIDADES') + btnModo('cajas', '📦 CAJAS') + '</div>' +
+          '<div class="input-caption"><label>Total recibido</label><span>Modifica el dato si es necesario</span></div>' +
           '<input type="number" class="inp-total-lote" min="0" value="' + (l.modo === 'cajas' ? (l.cajasDirectas || '') : (l.unidades || '')) + '" oninput="cambioEnLote(this,\'' + l.id + '\')" placeholder="TOTAL">' +
           cajasAuto +
         '</div>' +
         '<div class="pallet-plan">' +
-          '<div class="plan-titulo">🛠 Plan de pallets</div>' +
+          '<div class="plan-titulo">03 · Plan de estiba</div>' +
+          '<div class="plan-description">Indica cuántas cajas caben en cada pallet. La aplicación separa automáticamente los pallets completos y el pallet parcial.</div>' +
           '<div class="plan-auto" id="plan-auto-' + l.id + '"' + (usandoGrupos ? ' style="display:none"' : '') + '>' +
-            '<input type="number" class="inp-auto-cap" min="0" value="' + (l.cajasPorPallet || 77) + '" oninput="cambioEnLote(this,\'' + l.id + '\')" placeholder="77">' +
-            '<span class="g-sep">CAJAS POR PALLET</span>' +
+            '<div class="plan-field">' +
+              '<label>Capacidad por pallet</label>' +
+              '<div class="cap-input"><input type="number" class="inp-auto-cap" min="0" value="' + (l.cajasPorPallet ?? 0) + '" oninput="cambioEnLote(this,\'' + l.id + '\')" placeholder="Ej: 105"><b>CAJAS</b></div>' +
+              '<small>Ejemplo: escribe 105 para pallets de 105 cajas.</small>' +
+            '</div>' +
+            '<div class="plan-info" id="plan-info-' + l.id + '">' + planInfoHTML(calc) + '</div>' +
           '</div>' +
-          '<button class="btn btn-gris" onclick="toggleGrupos(\'' + l.id + '\')">' + (usandoGrupos ? '📦 MODO AUTOMÁTICO' : '🛠 AGREGAR GRUPOS') + '</button>' +
+          '<button class="btn btn-gris" style="margin-top:12px;" onclick="toggleGrupos(\'' + l.id + '\')">' + (usandoGrupos ? '↩ Volver al cálculo automático' : '⚙ Ajustar distribución manual') + '</button>' +
           '<div class="grupos" id="grupos-' + l.id + '"' + (usandoGrupos ? '' : ' style="display:none"') + '>' +
             gruposHtml +
-            '<button class="btn btn-gris" onclick="agregarGrupo(\'' + l.id + '\')">➕ Agregar grupo</button>' +
+            '<button class="btn btn-gris" onclick="agregarGrupo(\'' + l.id + '\')">➕ Agregar otro grupo</button>' +
           '</div>' +
-          '<div class="plan-info" id="plan-info-' + l.id + '">' + planInfoHTML(calc) + '</div>' +
+          '<div class="plan-info manual-plan-info"' + (usandoGrupos ? '' : ' style="display:none"') + '>' + planInfoHTML(calc) + '</div>' +
           '<div class="pallet-visual" id="visual-' + l.id + '">' + visualLote(calc) + '</div>' +
         '</div>' +
       '</div>';
@@ -935,7 +1133,7 @@
     const l = lotes.find(x => x.id === lId);
     if (!l) return;
     if (!l.usarGrupos) {
-      const cap = Number(l.cajasPorPallet) || 77;
+      const cap = Number(l.cajasPorPallet) || 0;
       const cajas = l.modo === 'cajas'
         ? (l.cajasDirectas || 0)
         : calcCajas(l.unidades || 0, l.unidadesPorCaja || 0);
@@ -964,7 +1162,7 @@
     if (auto) auto.textContent = l.modo === 'cajas'
       ? '→ ' + formatear(calc.cajas * l.unidadesPorCaja) + ' unidades (' + formatear(l.unidadesPorCaja) + ' unid./caja)'
       : '→ ' + formatear(calc.cajas) + ' cajas (' + formatear(l.unidadesPorCaja) + ' unid./caja)';
-    card.querySelector('.plan-info').innerHTML = planInfoHTML(calc);
+    card.querySelectorAll('.plan-info').forEach(function (info) { info.innerHTML = planInfoHTML(calc); });
     card.querySelector('.pallet-visual').innerHTML = visualLote(calc);
     actualizarResumen();
   }
@@ -980,7 +1178,7 @@
   function agregarGrupo(lId) {
     const l = lotes.find(x => x.id === lId);
     if (!l) return;
-    l.grupos.push({ cantidad: 1, cajasPorPallet: l.cajasPorPallet || 77 });
+    l.grupos.push({ cantidad: 1, cajasPorPallet: l.cajasPorPallet || 0 });
     guardarLotes();
     renderLotes();
   }
@@ -996,17 +1194,20 @@
 
   function actualizarResumen() {
     const totalBox = document.getElementById('total-general');
-    let totalCajas = 0, totalPallets = 0, n = 0;
+    let totalCajas = 0, totalPallets = 0, n = 0, pendientes = 0;
     lotes.forEach(l => {
       const calc = calcularLote(l);
       totalCajas += calc.cajas;
       totalPallets += calc.totalPallets;
+      if (calc.sinCapacidad) pendientes++;
       n++;
     });
     if (n === 0) { totalBox.style.display = 'none'; return; }
     document.getElementById('total-cajas').textContent = formatear(totalCajas);
-    document.getElementById('total-pallets').textContent = formatear(totalPallets);
-    document.getElementById('total-detalle').textContent = 'Sumando los ' + n + ' lote(s): ' + formatear(totalCajas) + ' cajas totales.';
+    document.getElementById('total-pallets').textContent = formatear(totalPallets) + (pendientes ? ' +' : '');
+    document.getElementById('total-detalle').textContent = pendientes
+      ? 'Hay ' + pendientes + ' lote(s) sin capacidad por pallet. Define esa capacidad para completar el total.'
+      : 'Sumando los ' + n + ' lote(s): ' + formatear(totalCajas) + ' cajas totales.';
     totalBox.style.display = 'block';
   }
 
@@ -1064,7 +1265,9 @@
     } else {
       lineas.push('   • ' + formatear(l.unidades) + ' unidades → ' + formatear(calc.cajas) + ' cajas');
     }
-    if (calc.sobrepasa) {
+    if (calc.sinCapacidad) {
+      lineas.push('   • ⏳ Pendiente: definir cajas por pallet.');
+    } else if (calc.sobrepasa) {
       lineas.push('   • ⚠ LOS PALLETS SOBREPASAN LAS CAJAS.');
     } else {
       (calc.plan || []).forEach(g => {
@@ -1101,7 +1304,9 @@
       } else {
         lineas.push('   • ' + formatear(l.unidades) + ' unidades → ' + formatear(calc.cajas) + ' cajas');
       }
-      if (calc.sobrepasa) {
+      if (calc.sinCapacidad) {
+        lineas.push('   • ⏳ Pendiente: definir cajas por pallet.');
+      } else if (calc.sobrepasa) {
         lineas.push('   • ⚠ LOS PALLETS SOBREPASAN LAS CAJAS.');
       } else {
         (calc.plan || []).forEach(g => {
@@ -1160,8 +1365,8 @@
       const res = await fetch('./productos.json');
       const data = await res.json();
       if (!Array.isArray(data)) return;
-      if (data.length === 0 && cargarProveedores().length > 0) return;
-      proveedores = data;
+      // Nunca se borra una base local por una actualización o por un catálogo publicado vacío.
+      proveedores = fusionarBase(data, cargarProveedores());
       localStorage.setItem('catalogoCache', JSON.stringify(data));
       guardarProveedores();
       aplicarUi();
@@ -1236,7 +1441,7 @@
   }
 
   function restaurarBase() {
-    if (!confirm('¿Restaurar la base publicada? Se perderán los cambios locales sin publicar.')) return;
+    if (!confirm('¿Actualizar con la base publicada? Tus proveedores y productos locales se conservarán.')) return;
     cargarBase();
   }
 
