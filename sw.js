@@ -1,4 +1,4 @@
-const CACHE = 'pallet-calc-v8';
+const CACHE = 'pallet-calc-v9';
 const ARCHIVOS = [
   './',
   './index.html',
