@@ -1,1 +1,55 @@
-[]
+[
+  {
+    "id": "id_mu1pkvz5_b43kjo",
+    "nombre": "DELENCANTO",
+    "sabores": [
+      {
+        "id": "id_mu1plb0x_llkfdt",
+        "nombre": "EXTRUIDO JAMÓN SERRANO",
+        "unidadesPorCaja": 200
+      },
+      {
+        "id": "id_mu1pln5s_ph5ino",
+        "nombre": "EXTRUIDO POLLO A LA BRASA",
+        "unidadesPorCaja": 200
+      }
+    ]
+  },
+  {
+    "id": "id_mu1pmq93_35kcgi",
+    "nombre": "SUPERIOR",
+    "sabores": [
+      {
+        "id": "id_mu1pmtmv_6f8vjo",
+        "nombre": "GALLETA RELLENA SABOR FRUTOS AMARILLOS",
+        "unidadesPorCaja": 200
+      },
+      {
+        "id": "id_mu1pn588_vmled7",
+        "nombre": "GALLETA RELLENA SABOR FRUTOS ROJOS",
+        "unidadesPorCaja": 200
+      },
+      {
+        "id": "id_mu1pnh7z_b12jiv",
+        "nombre": "GALLETA DULCE SABOR NARANJA Y MIEL",
+        "unidadesPorCaja": 195
+      },
+      {
+        "id": "id_mu1pnw7z_oq5zzx",
+        "nombre": "GALLETA DE SAL TOMATE Y QUESO",
+        "unidadesPorCaja": 180
+      }
+    ]
+  },
+  {
+    "id": "id_mu1pogye_6redq9",
+    "nombre": "DAVILA",
+    "sabores": [
+      {
+        "id": "id_mu1pokzq_skmeqv",
+        "nombre": "GRANOLA SABOR CHOCOPASAS",
+        "unidadesPorCaja": 280
+      }
+    ]
+  }
+]
